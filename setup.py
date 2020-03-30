@@ -1,6 +1,6 @@
 from distutils.core import setup
 
-ith open('README.md', 'r', encoding='utf8') as f:
+with open('README.md', 'r', encoding='utf8') as f:
     readme = f.read()
 
 setup(
@@ -11,11 +11,7 @@ setup(
     long_description=readme,
     python_requires='>=3.6',
     install_requires=[
-        'dataclasses;python_version=="3.6"',
-        'marshmallow>=3.3.0,<4.0.0',
-        'marshmallow-enum>=1.5.1,<2.0.0',
-        'typing-inspect>=0.4.0',
-        'stringcase==1.2.0,<2.0.0'
+        'dataclasses-json>=0.4.2',
     ],
     extras_require={
         'dev': [
@@ -23,7 +19,6 @@ setup(
             'ipython',
             'mypy>=0.710',
             'hypothesis',
-            'portray',
             'flake8',
             'simplejson'
         ]
