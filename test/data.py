@@ -82,7 +82,7 @@ MATCHES = {
                 "name": "Eastgate",
                 "country": {"id": 3, "name": "Mercia"},
             },
-            "referee": {"id": 123, "name": "None"},
+            "referee": {"id": 123, "name": "None"},  # "None" is not a bug! This is actually what the API returns...
         },
         {
             "match_id": 4321,

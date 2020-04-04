@@ -14,11 +14,18 @@ def json_prefix(prefix, include=None, exclude=None):
         for a_name in attr_names:
             if a_name in (exclude or []):
                 continue
-            if getattr(cls, a_name, dataclasses.MISSING) != dataclasses.MISSING:
+
+            a_value = getattr(cls, a_name, dataclasses.MISSING)
+            if isinstance(a_value, dataclasses.Field):
+                # TODO: in the case that a Field is already set, consider *merging* instead of simply
+                # skipping
                 continue
 
-            field = dataclasses.field(metadata=dataclasses_json.config(field_name=prefix + a_name))
-            setattr(cls, a_name, field)
+            prefixed_field = dataclasses.field(
+                default=a_value,
+                metadata=dataclasses_json.config(field_name=prefix + a_name)
+            )
+            setattr(cls, a_name, prefixed_field)
         return cls
     return process
 
@@ -70,8 +77,8 @@ class Gender(enum.Enum):
 class Competition:
     id: int
     name: str
-    country_name: typing.Optional[str] = None
     gender: typing.Optional[Gender] = None
+    country_name: typing.Optional[str] = None
 
 
 @dataclasses_json.dataclass_json
@@ -113,14 +120,14 @@ class Manager:
     name: str
     nickname: str
     dob: str = date_field()
-    country: typing.Optional[Country]
+    country: typing.Optional[Country] = None
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class Referee:
     id: int
-    name: str
+    name: typing.Optional[str] = None
     country: typing.Optional[Country] = None
 
 
