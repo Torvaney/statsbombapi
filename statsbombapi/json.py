@@ -91,6 +91,14 @@ class Season:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
+class DataUpdate:
+    # TODO: come up with a better name for this!
+    match_updated: datetime.datetime = iso_datetime_field()
+    match_available: datetime.datetime = iso_datetime_field()
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
 class Country:
     id: int
     name: str
@@ -119,8 +127,9 @@ class Manager:
     id: int
     name: str
     nickname: str
-    dob: str = date_field()
+    birth_date: str = date_field(metadata=dataclasses_json.config(field_name='dob'))
     country: typing.Optional[Country] = None
+    # TODO: parse managers from match json
 
 
 @dataclasses_json.dataclass_json
@@ -173,12 +182,49 @@ class Match:
     last_updated: datetime.datetime = iso_datetime_field()
 
 
-def parse_competitions(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[typing.Tuple[Competition, Season]]:
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+@json_prefix(prefix='player_', exclude=['birth_date', 'country'])
+class Player:
+    id: int
+    name: str
+    birth_date: date_field()
+    gender: Gender
+    height: float
+    weight: float
+    country: Country
+    nickname: typing.Optional[str] = None
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class PlayerLineup:
+    jersey_number: int
+
+
+class Lineup(typing.NamedTuple):
+    team: Team
+    lineup: typing.List[typing.Tuple[Player, PlayerLineup]]
+
+    @staticmethod
+    def from_dict(d):
+        return Lineup(
+            team=Team.from_dict(d),
+            lineup=tuple((Player.from_dict(x), PlayerLineup.from_dict(x)) for x in d['lineup'])
+        )
+
+
+def parse_competitions(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[typing.Tuple[Competition, Season, DataUpdate]]:
     competitions = Competition.schema().load(response, many=True, unknown='EXCLUDE')
     seasons = Season.schema().load(response, many=True, unknown='EXCLUDE')
-    # TODO: also include the match_updated info
-    return list(zip(competitions, seasons))
+    updates = DataUpdate.schema().load(response, many=True, unknown='EXCLUDE')
+    return list(zip(competitions, seasons, updates))
 
 
 def parse_matches(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[Match]:
     return [Match.from_dict(d) for d in response]
+
+
+def parse_lineups(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.Tuple[Lineup, Lineup]:
+    l1, l2 = response
+    return Lineup.from_dict(l1), Lineup.from_dict(l2)

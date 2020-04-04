@@ -82,7 +82,10 @@ MATCHES = {
                 "name": "Eastgate",
                 "country": {"id": 3, "name": "Mercia"},
             },
-            "referee": {"id": 123, "name": "None"},  # "None" is not a bug! This is actually what the API returns...
+            "referee": {
+                "id": 123,
+                "name": "None",
+            },  # "None" is not a mistake! This is actually what the API returns...
         },
         {
             "match_id": 4321,
@@ -114,7 +117,7 @@ MATCHES = {
                         "nickname": None,
                         "dob": "0627-04-01",
                         "country": {"id": 3, "name": "East Anglia"},
-                    }
+                    },
                 ],
             },
             "away_team": {
@@ -154,6 +157,68 @@ MATCHES = {
                 "name": "St. Bede",
                 "country": {"id": 4, "name": "Northumbria"},
             },
+        },
+    ]
+}
+
+
+LINEUPS = {
+    "v2": [
+        {
+            "team_id": 9876,
+            "team_name": "Some Home Team",
+            "lineup": [
+                {
+                    "player_id": 4546,
+                    "player_name": "Some Person",
+                    "player_nickname": None,
+                    "birth_date": "1992-01-01",
+                    "player_gender": "male",
+                    "player_height": 173.0,
+                    "player_weight": 63.0,
+                    "jersey_number": 21,
+                    "country": {"id": 11, "name": "Someplace"},
+                },
+                {
+                    "player_id": 6628,
+                    "player_name": "Some Person",
+                    "player_nickname": "Somey",
+                    "birth_date": "1992-01-01",
+                    "player_gender": "male",
+                    "player_height": 176.0,
+                    "player_weight": 73.0,
+                    "jersey_number": 10,
+                    "country": {"id": 178, "name": "Someplace"},
+                },
+            ],
+        },
+        {
+            "team_id": 3257463,
+            "team_name": "Some Away Team",
+            "lineup": [
+                {
+                    "player_id": 9745,
+                    "player_name": "Some Person",
+                    "player_nickname": "Somey",
+                    "birth_date": "1993-01-01",
+                    "player_gender": "male",
+                    "player_height": 172.0,
+                    "player_weight": 73.0,
+                    "jersey_number": 32,
+                    "country": {"id": 11, "name": "Someplace"},
+                },
+                {
+                    "player_id": 27341,
+                    "player_name": "Some Person",
+                    "player_nickname": "Somey",
+                    "birth_date": "1986-01-01",
+                    "player_gender": "male",
+                    "player_height": 166.0,
+                    "player_weight": 67.0,
+                    "jersey_number": 21,
+                    "country": {"id": 45, "name": "Someplace"},
+                },
+            ],
         },
     ]
 }
