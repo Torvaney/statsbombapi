@@ -129,6 +129,8 @@ class Referee:
     id: int
     name: typing.Optional[str] = None
     country: typing.Optional[Country] = None
+    # NOTE: could fix the name == 'None' issue with __post_init__, BUT then we couldn't
+    #       freeze the class
 
 
 class MatchStatus(enum.Enum):
