@@ -1,4 +1,4 @@
-from statsbombapi.core import (
+from statsbombapi.json import (
     Gender,
     Competition,
     Season,
