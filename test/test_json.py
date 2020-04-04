@@ -37,6 +37,7 @@ def test_matches():
             home_score=None,
             away_score=None,
             referee=sb_json.Referee(id=123, name='None', country=None),
+            metadata=sb_json.MatchMetadata(),
             last_updated=datetime.datetime(2019, 9, 1, 10, 48, 29, 321435)
         ),
         sb_json.Match(
@@ -53,6 +54,7 @@ def test_matches():
             home_score=1,
             away_score=3,
             referee=sb_json.Referee(id=454, name='St. Bede', country=sb_json.Country(id=4, name='Northumbria')),
+            metadata=sb_json.MatchMetadata(data_version='1.1.0', xy_fidelity_version='2', shot_fidelity_version='2'),
             last_updated=datetime.datetime(2020, 2, 11, 11, 18,7, 21000))
     ]
 

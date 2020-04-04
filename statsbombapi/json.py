@@ -142,6 +142,14 @@ class MatchStatus(enum.Enum):
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
+class MatchMetadata:
+    data_version: typing.Optional[str] = None
+    xy_fidelity_version: typing.Optional[str] = None
+    shot_fidelity_version: typing.Optional[str] = None
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
 @json_prefix(prefix='match_', include=['id', 'status'])
 class Match:
     id: int
@@ -161,12 +169,14 @@ class Match:
     home_score: typing.Optional[int]
     away_score: typing.Optional[int]
     referee: Referee
+    metadata: MatchMetadata
     last_updated: datetime.datetime = iso_datetime_field()
 
 
 def parse_competitions(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[typing.Tuple[Competition, Season]]:
     competitions = Competition.schema().load(response, many=True, unknown='EXCLUDE')
     seasons = Season.schema().load(response, many=True, unknown='EXCLUDE')
+    # TODO: also include the match_updated info
     return list(zip(competitions, seasons))
 
 
