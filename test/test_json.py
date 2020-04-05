@@ -38,7 +38,7 @@ def test_competitions():
         (
             sb_json.Competition(
                 id=2,
-                name='Wessex Men's Championship',
+                name="Wessex Men's Championship",
                 country_name='Wessex',
                 gender=sb_json.Gender.MALE,
             ),
@@ -51,7 +51,7 @@ def test_competitions():
         (
             sb_json.Competition(
                 id=3,
-                name='Wessex Women's Championship',
+                name="Wessex Women's Championship",
                 country_name='Wessex',
                 gender=sb_json.Gender.FEMALE,
             ),
