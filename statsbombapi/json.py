@@ -2,6 +2,7 @@ import datetime
 import enum
 import marshmallow
 import typing
+import uuid
 
 import dataclasses
 import dataclasses_json
@@ -206,12 +207,305 @@ class Lineup(typing.NamedTuple):
     team: Team
     lineup: typing.List[typing.Tuple[Player, PlayerLineup]]
 
+    # TODO: from_json? to_dict? to_json?
     @staticmethod
     def from_dict(d):
         return Lineup(
             team=Team.from_dict(d),
             lineup=tuple((Player.from_dict(x), PlayerLineup.from_dict(x)) for x in d['lineup'])
         )
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class EventType:
+    id: int
+    name: str
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class PlayPattern:
+    id: int
+    name: str
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Position:
+    id: int
+    name: str
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class TacticPlayer:
+    # TODO: better name
+    player: Player  # NB no prefix
+    position: Position
+
+
+# @dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Tactics:
+    formation: str
+    # TODO: work out how to define this as a field with encoder and decoder? Maybe do the same for Lineup?
+    lineup: typing.List[typing.Tuple[TacticPlayer, PlayerLineup]]
+
+    def __post_init__(self):
+        n_players = sum(int(i) for i in self.formation)
+        if n_players > 10:
+            raise TypeError(f'Formations must have 10 outfield players of fewer! {self.formation} has {n_players}.')
+
+
+# Event qualifiers
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class StatsBombObject:
+    id: int
+    name: str
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class FiftyFifty:
+    outcome: StatsBombObject
+    counterpress: typing.Optional[bool] = None
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class BadBehaviour:
+    card: StatsBombObject
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class BallReceipt:
+    outcome: StatsBombObject
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class BallRecovery:
+    offensive: bool
+    recovery_failure: bool
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Block:
+    deflection: bool
+    offensive: bool
+    save_block: bool
+    counterpress: bool
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Carry:
+    end_location: typing.List[float]
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Clearance:
+    aerial_won: bool
+    body_part: StatsBombObject
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Dribble:
+    overrun: bool
+    nutmeg: bool
+    outcome: StatsBombObject
+    no_touch: typing.Optional[bool] = None
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class DribbledPast:
+    counterpress: bool
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Duel:
+    counterpress: bool
+    type: StatsBombObject
+    outcome: StatsBombObject
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class FoulCommitted:
+    counterpress: bool
+    offensive: bool
+    type: StatsBombObject
+    advantage: bool
+    penalty: bool
+    card: StatsBombObject
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class FoulWon:
+    defensive: bool
+    advantage: bool
+    penalty: bool
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Goalkeeper:
+    position: StatsBombObject
+    technique: StatsBombObject
+    body_part: StatsBombObject
+    type: StatsBombObject
+    outcome: StatsBombObject
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class HalfEnd:
+    early_video_end: bool
+    match_suspended: bool
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class HalfStart:
+    late_video_start: bool
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class InjuryStoppage:
+    in_chain: bool
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Interception:
+    outcome: StatsBombObject
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Miscontrol:
+    aerial_won: bool
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Pass:
+    recipient: Player  # NB no prefix
+    length: float
+    angle: float
+    height: StatsBombObject
+    end_location: typing.List[float]
+    body_part: StatsBombObject
+    type: StatsBombObject
+    outcome: typing.Optional[StatsBombObject] = None
+    technique: typing.Optional[StatsBombObject] = None
+    assisted_shot_id: typing.Optional[uuid.UUID] = None
+    backheel: typing.Optional[bool] = None
+    deflected: typing.Optional[bool] = None
+    miscommunication: typing.Optional[bool] = None
+    cross: typing.Optional[bool] = None
+    cut_back: typing.Optional[bool] = None
+    switch: typing.Optional[bool] = None
+    shot_assist: typing.Optional[bool] = None
+    goal_assist: typing.Optional[bool] = None
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class PlayerOff:
+    permanent: bool
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Pressure:
+    counterpress: bool
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Shot:
+    key_pass_id: uuid.UUID
+    end_location: typing.List[float]
+    aerial_won: bool
+    follows_dribble: bool
+    first_time: bool
+    freeze_frame: ...
+    open_goal: bool
+    statsbomb_xg: float
+    deflected: bool
+    technique: StatsBombObject
+    body_part: StatsBombObject
+    type: StatsBombObject
+    outcome: StatsBombObject
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Substitution:
+    replacement: Player
+    outcome: StatsBombObject
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Event:
+    id: uuid.UUID
+    index: int
+    period: int
+    timestamp: ...
+    minute: int
+    second: int
+    duration: float
+    type: EventType
+    possession: int
+    possession_team: Team  # NB without prefix!
+    play_pattern: PlayPattern
+    team: Team  # NB without prefix!
+    player: Player  # NB without prefix!
+    position: Position
+    location: typing.List[float]
+    under_pressure: typing.Optional[bool]
+    off_camera: typing.Optional[bool]
+    out: typing.Optional[bool]
+    related_events: typing.List[uuid.UUID]
+    tactics: typing.Optional[uuid.UUID]
+
+    # Nested event metadata
+    fifty_fifty: typing.Optional[FiftyFifty] = dataclasses.field(metadata=dataclasses_json.config(field_name='50_50'))
+    bad_behaviour: typing.Optional[BadBehaviour] = None
+    ball_receipt: typing.Optional[BallReceipt] = None
+    ball_recovery: typing.Optional[BallRecovery] = None
+    block: typing.Optional[Block] = None
+    carry: typing.Optional[Carry] = None
+    clearance: typing.Optional[Clearance] = None
+    dribble: typing.Optional[Dribble] = None
+    dribbled_past: typing.Optional[DribbledPast] = None
+    duel: typing.Optional[Duel] = None
+    foul_committed: typing.Optional[FoulCommitted] = None
+    foul_won: typing.Optional[FoulWon] = None
+    goalkeeper: typing.Optional[Goalkeeper] = None
+    half_end: typing.Optional[HalfEnd] = None
+    half_start: typing.Optional[HalfStart] = None
+    injury_stoppage: typing.Optional[InjuryStoppage] = None
+    interception: typing.Optional[Interception] = None
+    miscontrol: typing.Optional[Miscontrol] = None
+    pass_: typing.Optional[Pass] = None
+    player_off: typing.Optional[PlayerOff] = None
+    pressure: typing.Optional[Pressure] = None
+    shot: typing.Optional[Shot] = None
+    substitution: typing.Optional[Substitution] = None
 
 
 def parse_competitions(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[typing.Tuple[Competition, Season, DataUpdate]]:
