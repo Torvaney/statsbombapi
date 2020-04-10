@@ -1,3 +1,4 @@
+import collections.abc
 import datetime
 import enum
 import marshmallow
@@ -92,10 +93,35 @@ class Season:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class DataUpdate:
-    # TODO: come up with a better name for this!
+class CompetitionSeason:
+    competition_id: int
+    competition_name: str
+    competition_gender: Gender
+    country_name: str
+    season_id: int
+    season_name: str
     match_updated: datetime.datetime = iso_datetime_field()
     match_available: datetime.datetime = iso_datetime_field()
+
+    competition: typing.Optional[Competition] = None
+    season: typing.Optional[Season] = None
+
+    def __post_init__(self):
+        # Use object.__setattr__ to set attributes with frozen=True
+        # https://stackoverflow.com/questions/53756788/how-to-set-the-value-of-dataclass-field-in-post-init-when-frozen-true
+        competition = self.competition or Competition(
+            id=self.competition_id,
+            name=self.competition_name,
+            gender=self.competition_gender,
+            country_name=self.country_name
+        )
+        object.__setattr__(self, 'competition', competition)
+
+        season = self.season or Season(
+            id=self.season_id,
+            name=self.season_name
+        )
+        object.__setattr__(self, 'season', season)
 
 
 @dataclasses_json.dataclass_json
@@ -508,11 +534,10 @@ class Event:
     substitution: typing.Optional[Substitution] = None
 
 
-def parse_competitions(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[typing.Tuple[Competition, Season, DataUpdate]]:
-    competitions = Competition.schema().load(response, many=True, unknown='EXCLUDE')
-    seasons = Season.schema().load(response, many=True, unknown='EXCLUDE')
-    updates = DataUpdate.schema().load(response, many=True, unknown='EXCLUDE')
-    return list(zip(competitions, seasons, updates))
+# Parse routes
+
+def parse_competitions(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[CompetitionSeason]:
+    return CompetitionSeason.schema().load(response, many=True)
 
 
 def parse_matches(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[Match]:
@@ -522,3 +547,27 @@ def parse_matches(response: typing.List[typing.Dict[str, typing.Any]]) -> typing
 def parse_lineups(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.Tuple[Lineup, Lineup]:
     l1, l2 = response
     return Lineup.from_dict(l1), Lineup.from_dict(l2)
+
+
+def extract(target, obj):
+    if isinstance(obj, target):
+        yield obj
+    elif isinstance(obj, collections.abc.Iterable):
+        yield from _extract_iter(target, obj)
+    elif dataclasses.is_dataclass(obj):
+        yield from _extract_dataclass(target, obj)
+
+
+def _extract_iter(target, obj):
+    for o in obj:
+        # Prevent infinite recursion in strings
+        if o == obj:
+            continue
+        yield from extract(target, o)
+
+
+def _extract_dataclass(target, obj):
+    for field in dataclasses.fields(obj):
+        field_value = getattr(obj, field.name)
+        if isinstance(field_value, target):
+            yield from extract(target, field_value)

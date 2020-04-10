@@ -3,70 +3,67 @@ Test the parsing of (mocked) data from statsbomb API routes
 """
 import datetime
 
+import hypothesis
+import hypothesis.strategies as st
+
 import statsbombapi.json as sb_json
 import data
 
 
-def test_competitions():
-    reference = [
-        (
-            sb_json.Competition(
-                id=1,
-                name='Brythonic Premier League',
-                country_name='Dumnonia',
-                gender=sb_json.Gender.MALE,
-            ),
-            sb_json.Season(id=1, name='560/561'),
-            sb_json.DataUpdate(
-                match_updated=datetime.datetime(2020, 1, 30, 2, 24, 23, 296715),
-                match_available=datetime.datetime(2020, 1, 30, 2, 24, 23, 296715),
-            ),
-        ),
-        (
-            sb_json.Competition(
-                id=1,
-                name='Brythonic Premier League',
-                country_name='Dumnonia',
-                gender=sb_json.Gender.MALE,
-            ),
-            sb_json.Season(id=2, name='561/562'),
-            sb_json.DataUpdate(
-                match_updated=datetime.datetime(2000, 12, 1, 23, 0),
-                match_available=datetime.datetime(2000, 12, 1, 23, 0),
-            ),
-        ),
-        (
-            sb_json.Competition(
-                id=2,
-                name="Wessex Men's Championship",
-                country_name='Wessex',
-                gender=sb_json.Gender.MALE,
-            ),
-            sb_json.Season(id=2, name='561/562'),
-            sb_json.DataUpdate(
-                match_updated=datetime.datetime(2000, 12, 1, 23, 0),
-                match_available=datetime.datetime(2000, 12, 1, 23, 0),
-            ),
-        ),
-        (
-            sb_json.Competition(
-                id=3,
-                name="Wessex Women's Championship",
-                country_name='Wessex',
-                gender=sb_json.Gender.FEMALE,
-            ),
-            sb_json.Season(id=2, name='561/562'),
-            sb_json.DataUpdate(
-                match_updated=datetime.datetime(2000, 12, 1, 23, 0),
-                match_available=datetime.datetime(2000, 12, 1, 23, 0),
-            ),
-        ),
+def test_extract_unit():
+    assert set(sb_json.extract(int, 1)) == {1}
+    assert set(sb_json.extract(str, 'a')) == {'a'}
+
+    assert set(sb_json.extract(int, [1, 2, 3])) == {1, 2, 3}
+    assert set(sb_json.extract(int, [[5], [4, 3]])) == {3, 4, 5}
+    assert set(sb_json.extract(str, ['a', ['b', 'c']])) == {'a', 'b', 'c'}
+
+    competition_season = sb_json.CompetitionSeason(
+        competition_id=1,
+        competition_name='ok',
+        competition_gender='female',
+        country_name='trytegrw',
+        season_id=1,
+        season_name='2020/2021',
+        match_updated=datetime.datetime(2020, 1, 1),
+        match_available=datetime.datetime(2020, 1, 1)
+    )
+    assert set(sb_json.extract(sb_json.Season, [competition_season])) == {sb_json.Season(1, '2020/2021')}
+    assert set(sb_json.extract(sb_json.Competition, [competition_season])) == {sb_json.Competition(1, 'ok', 'female', 'trytegrw')}
+
+
+# NOTE: can we parameterise these tests by the type within the list??
+@hypothesis.given(st.lists(st.integers()))
+def test_extract_list_ints(xs):
+    assert set(sb_json.extract(int, xs)) == set(xs)
+
+
+@hypothesis.given(st.lists(st.booleans()))
+def test_extract_list_bools(xs):
+    assert set(sb_json.extract(bool, xs)) == set(xs)
+
+
+@hypothesis.given(st.lists(st.builds(sb_json.Season, id=st.integers(), name=st.text())))
+def test_extract_list_json(xs):
+    assert set(sb_json.extract(sb_json.Season, xs)) == set(xs)
+
+
+def test_competitions_route():
+    competitions = [
+        sb_json.Competition(id=3, name="Wessex Women's Championship", gender=sb_json.Gender.FEMALE, country_name='Wessex'),
+        sb_json.Competition(id=1, name='Brythonic Premier League', gender=sb_json.Gender.MALE, country_name='Dumnonia'),
+        sb_json.Competition(id=2, name="Wessex Men's Championship", gender=sb_json.Gender.MALE, country_name='Wessex'),
+    ]
+
+    seasons = [
+        sb_json.Season(id=1, name='560/561'),
+        sb_json.Season(id=2, name='561/562')
     ]
 
     for version in ['v2']:
-        assert set(reference) == set(
-            sb_json.parse_competitions(data.COMPETITIONS[version])
-        )
+        parsed = sb_json.parse_competitions(data.COMPETITIONS[version])
+        assert set(competitions) == set(sb_json.extract(sb_json.Competition, parsed))
+        assert set(seasons) == set(sb_json.extract(sb_json.Season, parsed))
 
 
 def test_matches():
