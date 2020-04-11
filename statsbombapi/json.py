@@ -215,7 +215,7 @@ class Match:
 class Player:
     id: int
     name: str
-    birth_date: date_field(field_name='birth_date')
+    birth_date: datetime.date = date_field(field_name='birth_date')
     gender: Gender
     height: float
     weight: float
@@ -226,20 +226,48 @@ class Player:
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class PlayerLineup:
+    player_id: int
+    player_name: str
+    player_nickname: typing.Optional[str]
+    birth_date: datetime.date = date_field(field_name='birth_date')
+    player_gender: Gender
+    player_height: float
+    player_weight: float
+    country: Country
     jersey_number: int
 
+    player: typing.Optional[Player] = None
 
-class Lineup(typing.NamedTuple):
-    team: Team
-    lineup: typing.List[typing.Tuple[Player, PlayerLineup]]
-
-    # TODO: from_json? to_dict? to_json?
-    @staticmethod
-    def from_dict(d):
-        return Lineup(
-            team=Team.from_dict(d),
-            lineup=tuple((Player.from_dict(x), PlayerLineup.from_dict(x)) for x in d['lineup'])
+    def __post_init__(self):
+        player = self.player or Player(
+            id=self.player_id,
+            name=self.player_name,
+            nickname=self.player_nickname,
+            birth_date=self.birth_date,
+            gender=self.player_gender,
+            weight=self.player_weight,
+            height=self.player_height,
+            country=self.country
         )
+        object.__setattr__(self, 'player', player)
+
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
+class Lineup:
+    team_id: int
+    team_name: int
+    lineup: typing.List[PlayerLineup]
+
+    team: typing.Optional[Team] = None
+
+    def __post_init__(self):
+        team = self.team or Team(
+            id=self.team_id,
+            name=self.team_name
+        )
+        object.__setattr__(self, 'team', team)
 
 
 @dataclasses_json.dataclass_json
@@ -546,7 +574,7 @@ def parse_matches(response: typing.List[typing.Dict[str, typing.Any]]) -> typing
 
 def parse_lineups(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.Tuple[Lineup, Lineup]:
     l1, l2 = response
-    return Lineup.from_dict(l1), Lineup.from_dict(l2)
+    return [Lineup.from_dict(l1), Lineup.from_dict(l2)]
 
 
 def extract(target, obj):
@@ -569,5 +597,4 @@ def _extract_iter(target, obj):
 def _extract_dataclass(target, obj):
     for field in dataclasses.fields(obj):
         field_value = getattr(obj, field.name)
-        if isinstance(field_value, target):
-            yield from extract(target, field_value)
+        yield from extract(target, field_value)
