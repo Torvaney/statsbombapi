@@ -17,6 +17,7 @@ def test_extract_unit():
     assert set(sb_json.extract(int, [1, 2, 3])) == {1, 2, 3}
     assert set(sb_json.extract(int, [[5], [4, 3]])) == {3, 4, 5}
     assert set(sb_json.extract(str, ['a', ['b', 'c']])) == {'a', 'b', 'c'}
+    assert set(sb_json.extract(bool, [[[[True, False]]]])) == {True, False}
 
     competition_season = sb_json.CompetitionSeason(
         competition_id=1,
@@ -28,24 +29,23 @@ def test_extract_unit():
         match_updated=datetime.datetime(2020, 1, 1),
         match_available=datetime.datetime(2020, 1, 1)
     )
-    assert set(sb_json.extract(sb_json.Season, [competition_season])) == {sb_json.Season(1, '2020/2021')}
-    assert set(sb_json.extract(sb_json.Competition, [competition_season])) == {sb_json.Competition(1, 'ok', 'female', 'trytegrw')}
+    assert set(sb_json.extract(sb_json.Season, competition_season)) == {sb_json.Season(1, '2020/2021')}
+    assert set(sb_json.extract(sb_json.Competition, competition_season)) == {sb_json.Competition(1, 'ok', 'female', 'trytegrw')}
 
 
-# NOTE: can we parameterise these tests by the type within the list??
 @hypothesis.given(st.lists(st.integers()))
 def test_extract_list_ints(xs):
     assert set(sb_json.extract(int, xs)) == set(xs)
 
 
-@hypothesis.given(st.lists(st.booleans()))
-def test_extract_list_bools(xs):
-    assert set(sb_json.extract(bool, xs)) == set(xs)
+@hypothesis.given(st.recursive(st.booleans(), st.lists))
+def test_extract_recursive_bool(xs):
+    assert ({True, False} | set(sb_json.extract(bool, xs))) == {True, False}
 
 
-@hypothesis.given(st.lists(st.builds(sb_json.Season, id=st.integers(), name=st.text())))
-def test_extract_list_json(xs):
-    assert set(sb_json.extract(sb_json.Season, xs)) == set(xs)
+@hypothesis.given(st.recursive(st.builds(sb_json.Season, id=st.integers(), name=st.text()), st.lists))
+def test_extract_recursive_json(xs):
+    assert all(isinstance(x, sb_json.Season) for x in sb_json.extract(sb_json.Season, xs))
 
 
 def test_competitions_route():
