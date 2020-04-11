@@ -139,70 +139,54 @@ def test_matches():
 
 
 def test_lineups():
-    reference = (
-        sb_json.Lineup(
-            team=sb_json.Team(id=9876, name='Some Home Team', gender=None, country=None),
-            lineup=(
-                (
-                    sb_json.Player(
-                        id=4546,
-                        name='Some Person',
-                        birth_date='1992-01-01',
-                        gender=sb_json.Gender.MALE,
-                        height=173.0,
-                        weight=63.0,
-                        country=sb_json.Country(id=11, name='Someplace'),
-                        nickname=None,
-                    ),
-                    sb_json.PlayerLineup(jersey_number=21),
-                ),
-                (
-                    sb_json.Player(
-                        id=6628,
-                        name='Some Person',
-                        birth_date='1992-01-01',
-                        gender=sb_json.Gender.MALE,
-                        height=176.0,
-                        weight=73.0,
-                        country=sb_json.Country(id=178, name='Someplace'),
-                        nickname='Somey',
-                    ),
-                    sb_json.PlayerLineup(jersey_number=10),
-                ),
-            ),
+    teams = [
+        sb_json.Team(id=9876, name='Some Home Team', gender=None, country=None),
+        sb_json.Team(id=3257463, name='Some Away Team', gender=None, country=None)
+    ]
+    players = [
+        sb_json.Player(
+            id=4546,
+            name='Some Person',
+            birth_date=datetime.date(1992, 1, 1),
+            gender=sb_json.Gender.MALE,
+            height=173.0,
+            weight=63.0,
+            country=sb_json.Country(id=11, name='Someplace'),
+            nickname=None,
         ),
-        sb_json.Lineup(
-            team=sb_json.Team(id=3257463, name='Some Away Team', gender=None, country=None),
-            lineup=(
-                (
-                    sb_json.Player(
-                        id=9745,
-                        name='Some Person',
-                        birth_date='1993-01-01',
-                        gender=sb_json.Gender.MALE,
-                        height=172.0,
-                        weight=73.0,
-                        country=sb_json.Country(id=11, name='Someplace'),
-                        nickname='Somey',
-                    ),
-                    sb_json.PlayerLineup(jersey_number=32),
-                ),
-                (
-                    sb_json.Player(
-                        id=27341,
-                        name='Some Person',
-                        birth_date='1986-01-01',
-                        gender=sb_json.Gender.MALE,
-                        height=166.0,
-                        weight=67.0,
-                        country=sb_json.Country(id=45, name='Someplace'),
-                        nickname='Somey',
-                    ),
-                    sb_json.PlayerLineup(jersey_number=21),
-                ),
-            ),
+        sb_json.Player(
+            id=6628,
+            name='Some Person',
+            birth_date=datetime.date(1992, 1, 1),
+            gender=sb_json.Gender.MALE,
+            height=176.0,
+            weight=73.0,
+            country=sb_json.Country(id=178, name='Someplace'),
+            nickname='Somey',
         ),
-    )
+        sb_json.Player(
+            id=9745,
+            name='Some Person',
+            birth_date=datetime.date(1993, 1, 1),
+            gender=sb_json.Gender.MALE,
+            height=172.0,
+            weight=73.0,
+            country=sb_json.Country(id=11, name='Someplace'),
+            nickname='Somey',
+        ),
+        sb_json.Player(
+            id=27341,
+            name='Some Person',
+            birth_date=datetime.date(1986, 1, 1),
+            gender=sb_json.Gender.MALE,
+            height=166.0,
+            weight=67.0,
+            country=sb_json.Country(id=45, name='Someplace'),
+            nickname='Somey',
+        )
+    ]
 
     for version in ['v2']:
-        assert set(reference) == set(sb_json.parse_lineups(data.LINEUPS[version]))
+        parsed = sb_json.parse_lineups(data.LINEUPS[version])
+        assert set(teams) == set(sb_json.extract(sb_json.Team, parsed))
+        assert set(players) == set(sb_json.extract(sb_json.Player, parsed))

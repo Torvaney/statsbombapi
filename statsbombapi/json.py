@@ -154,7 +154,7 @@ class Manager:
     id: int
     name: str
     nickname: str
-    birth_date: str = date_field(metadata=dataclasses_json.config(field_name='dob'))
+    birth_date: str = date_field(field_name='dob')
     country: typing.Optional[Country] = None
     # TODO: parse managers from match json
 
@@ -191,7 +191,7 @@ class Match:
     id: int
     competition: Competition
     season: Season
-    date: datetime.date = date_field(metadata=dataclasses_json.config(field_name='match_date'))
+    date: datetime.date = date_field(field_name='match_date')
     kick_off: datetime.time = dataclasses.field(metadata=dataclasses_json.config(
         encoder=str,
         decoder=lambda x: datetime.datetime.strptime(x, '%H:%M:%S.%f').time(),
@@ -215,7 +215,7 @@ class Match:
 class Player:
     id: int
     name: str
-    birth_date: date_field()
+    birth_date: date_field(field_name='birth_date')
     gender: Gender
     height: float
     weight: float
