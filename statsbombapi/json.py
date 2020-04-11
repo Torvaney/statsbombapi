@@ -81,7 +81,6 @@ class Gender(enum.Enum):
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-@json_prefix(prefix='competition_', exclude=['country_name'])
 class Competition:
     id: int
     name: str
@@ -91,7 +90,6 @@ class Competition:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-@json_prefix(prefix='season_')
 class Season:
     id: int
     name: str
@@ -192,11 +190,10 @@ class MatchMetadata:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-@json_prefix(prefix='match_', include=['id', 'status'])
 class Match:
-    id: int
-    competition: Competition
-    season: Season
+    id: int = dataclasses.field(metadata=dataclasses_json.config(field_name='match_id'))
+    competition: Competition = with_prefix(Competition, 'competition_')
+    season: Season = with_prefix(Season, 'season_')
     date: datetime.date = date_field(field_name='match_date')
     kick_off: datetime.time = dataclasses.field(metadata=dataclasses_json.config(
         encoder=str,
@@ -204,10 +201,10 @@ class Match:
         mm_field=marshmallow.fields.Time()
     ))
     match_week: int
-    status: MatchStatus
+    status: MatchStatus = dataclasses.field(metadata=dataclasses_json.config(field_name='match_status'))
     competition_stage: CompetitionStage
-    home_team: Team = with_prefix(Team, 'home_')
-    away_team: Team = with_prefix(Team, 'away_')
+    home_team: Team = with_prefix(Team, 'home_team_')
+    away_team: Team = with_prefix(Team, 'away_team_')
     home_score: typing.Optional[int]
     away_score: typing.Optional[int]
     referee: Referee
@@ -217,7 +214,6 @@ class Match:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-@json_prefix(prefix='player_', exclude=['birth_date', 'country'])
 class Player:
     id: int
     name: str
