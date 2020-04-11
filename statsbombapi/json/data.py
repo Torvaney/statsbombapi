@@ -1,4 +1,3 @@
-import collections.abc
 import datetime
 import enum
 import marshmallow
@@ -34,19 +33,12 @@ def with_prefix(x, prefix):
     ))
 
 
-def skip_none(f):
-    def g(x, *args, **kwargs):
-        if x is None:
-            return None
-        return f(x)
-
-
 def date_field(default=dataclasses.MISSING, **kwargs):
     return dataclasses.field(
         default=default,
         metadata=dataclasses_json.config(
-            encoder=skip_none(str),
-            decoder=skip_none(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d').date()),
+            encoder=str,
+            decoder=lambda x: datetime.datetime.strptime(x, '%Y-%m-%d').date() if x else None,
             mm_field=marshmallow.fields.Date(),
             **kwargs
         )
@@ -225,13 +217,13 @@ class Player:
 class LineupPlayer:
     player_id: int
     player_name: str
-    player_nickname: typing.Optional[str]
-    birth_date: datetime.date = date_field(field_name='birth_date')
     player_gender: Gender
+    birth_date: datetime.date = date_field(field_name='birth_date')
     player_height: float
     player_weight: float
     country: Country
     jersey_number: int
+    player_nickname: typing.Optional[str] = None
 
     player: typing.Optional[Player] = None
 
@@ -585,47 +577,3 @@ class Event:
     pressure: typing.Optional[Pressure] = None
     shot: typing.Optional[Shot] = None
     substitution: typing.Optional[Substitution] = None
-
-
-# Parse routes
-
-def parse_competitions(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[CompetitionSeason]:
-    return CompetitionSeason.schema().load(response, many=True)
-
-
-def parse_matches(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[Match]:
-    return [Match.from_dict(d) for d in response]
-
-
-def parse_lineups(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[Lineup]:
-    l1, l2 = response
-    return [Lineup.from_dict(l1), Lineup.from_dict(l2)]
-
-
-def parse_events(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[Event]:
-    return Event.schema().load(response, many=True)
-
-
-# Extracting objects from parsed json
-
-def extract(target, obj):
-    if isinstance(obj, target):
-        yield obj
-    elif isinstance(obj, collections.abc.Iterable):
-        yield from _extract_from_iter(target, obj)
-    elif dataclasses.is_dataclass(obj):
-        yield from _extract_from_dataclass(target, obj)
-
-
-def _extract_from_iter(target, obj):
-    for o in obj:
-        # Prevent infinite recursion in strings
-        if o == obj:
-            continue
-        yield from extract(target, o)
-
-
-def _extract_from_dataclass(target, obj):
-    for field in dataclasses.fields(obj):
-        field_value = getattr(obj, field.name)
-        yield from extract(target, field_value)

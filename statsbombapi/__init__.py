@@ -6,5 +6,8 @@ from statsbombapi.json import (
     Match,
     Team,
     parse_competitions,
-    parse_matches
+    parse_matches,
+    parse_lineups,
+    parse_events,
+    extract
 )

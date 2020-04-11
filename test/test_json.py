@@ -8,13 +8,13 @@ import hypothesis.strategies as st
 
 import statsbombapi.json as sb_json
 import data
-
+import events
 
 
 @hypothesis.given(st.text(), st.lists(st.text()), st.lists(st.integers()))
 def test_prefix(prefix, ks, vals):
     d = dict(zip(ks, vals))
-    assert sb_json.remove_prefix(sb_json.add_prefix(d, prefix), prefix) == d
+    assert sb_json.data.remove_prefix(sb_json.data.add_prefix(d, prefix), prefix) == d
 
 
 def test_extract_unit():
