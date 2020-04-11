@@ -612,12 +612,12 @@ def extract(target, obj):
     if isinstance(obj, target):
         yield obj
     elif isinstance(obj, collections.abc.Iterable):
-        yield from _extract_iter(target, obj)
+        yield from _extract_from_iter(target, obj)
     elif dataclasses.is_dataclass(obj):
-        yield from _extract_dataclass(target, obj)
+        yield from _extract_from_dataclass(target, obj)
 
 
-def _extract_iter(target, obj):
+def _extract_from_iter(target, obj):
     for o in obj:
         # Prevent infinite recursion in strings
         if o == obj:
@@ -625,7 +625,7 @@ def _extract_iter(target, obj):
         yield from extract(target, o)
 
 
-def _extract_dataclass(target, obj):
+def _extract_from_dataclass(target, obj):
     for field in dataclasses.fields(obj):
         field_value = getattr(obj, field.name)
         yield from extract(target, field_value)
