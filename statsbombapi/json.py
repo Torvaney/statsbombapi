@@ -316,6 +316,10 @@ class Tactics:
 
 # Event qualifiers
 
+class EventMetadata:
+    pass
+
+
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class StatsBombObject:
@@ -325,33 +329,33 @@ class StatsBombObject:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class FiftyFifty:
+class FiftyFifty(EventMetadata):
     outcome: StatsBombObject
     counterpress: typing.Optional[bool] = None
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class BadBehaviour:
+class BadBehaviour(EventMetadata):
     card: StatsBombObject
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class BallReceipt:
+class BallReceipt(EventMetadata):
     outcome: StatsBombObject
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class BallRecovery:
+class BallRecovery(EventMetadata):
     offensive: bool
     recovery_failure: bool
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class Block:
+class Block(EventMetadata):
     deflection: bool
     offensive: bool
     save_block: bool
@@ -360,20 +364,20 @@ class Block:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class Carry:
+class Carry(EventMetadata):
     end_location: typing.List[float]
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class Clearance:
+class Clearance(EventMetadata):
     aerial_won: bool
     body_part: StatsBombObject
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class Dribble:
+class Dribble(EventMetadata):
     overrun: bool
     nutmeg: bool
     outcome: StatsBombObject
@@ -382,13 +386,13 @@ class Dribble:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class DribbledPast:
+class DribbledPast(EventMetadata):
     counterpress: bool
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class Duel:
+class Duel(EventMetadata):
     counterpress: bool
     type: StatsBombObject
     outcome: StatsBombObject
@@ -396,7 +400,7 @@ class Duel:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class FoulCommitted:
+class FoulCommitted(EventMetadata):
     counterpress: bool
     offensive: bool
     type: StatsBombObject
@@ -407,7 +411,7 @@ class FoulCommitted:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class FoulWon:
+class FoulWon(EventMetadata):
     defensive: bool
     advantage: bool
     penalty: bool
@@ -415,7 +419,7 @@ class FoulWon:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class Goalkeeper:
+class Goalkeeper(EventMetadata):
     position: StatsBombObject
     technique: StatsBombObject
     body_part: StatsBombObject
@@ -425,38 +429,38 @@ class Goalkeeper:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class HalfEnd:
+class HalfEnd(EventMetadata):
     early_video_end: bool
     match_suspended: bool
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class HalfStart:
+class HalfStart(EventMetadata):
     late_video_start: bool
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class InjuryStoppage:
+class InjuryStoppage(EventMetadata):
     in_chain: bool
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class Interception:
+class Interception(EventMetadata):
     outcome: StatsBombObject
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class Miscontrol:
+class Miscontrol(EventMetadata):
     aerial_won: bool
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class Pass:
+class Pass(EventMetadata):
     recipient: Player  # NB no prefix
     length: float
     angle: float
@@ -479,19 +483,19 @@ class Pass:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class PlayerOff:
+class PlayerOff(EventMetadata):
     permanent: bool
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class Pressure:
+class Pressure(EventMetadata):
     counterpress: bool
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class Shot:
+class Shot(EventMetadata):
     key_pass_id: uuid.UUID
     end_location: typing.List[float]
     aerial_won: bool
@@ -509,7 +513,7 @@ class Shot:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class Substitution:
+class Substitution(EventMetadata):
     replacement: Player
     outcome: StatsBombObject
 
@@ -574,10 +578,12 @@ def parse_matches(response: typing.List[typing.Dict[str, typing.Any]]) -> typing
     return [Match.from_dict(d) for d in response]
 
 
-def parse_lineups(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.Tuple[Lineup, Lineup]:
+def parse_lineups(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[Lineup]:
     l1, l2 = response
     return [Lineup.from_dict(l1), Lineup.from_dict(l2)]
 
+
+# Extracting objects from parsed json
 
 def extract(target, obj):
     if isinstance(obj, target):
