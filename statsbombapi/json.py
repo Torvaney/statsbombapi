@@ -9,28 +9,6 @@ import dataclasses
 import dataclasses_json
 
 
-def json_prefix(prefix, include=None, exclude=None):
-    """ Add a json prefix to any dataclass attributes that do not have field information set. """
-    def process(cls):
-        attr_names = include or cls.__dict__.get('__annotations__', {})
-        for a_name in attr_names:
-            if a_name in (exclude or []):
-                continue
-
-            a_value = getattr(cls, a_name, dataclasses.MISSING)
-            if isinstance(a_value, dataclasses.Field):
-                # TODO: in the case that a Field is already set, consider *merging* instead of simply
-                # skipping
-                continue
-
-            prefixed_field = dataclasses.field(
-                default=a_value,
-                metadata=dataclasses_json.config(field_name=prefix + a_name)
-            )
-            setattr(cls, a_name, prefixed_field)
-        return cls
-    return process
-
 
 def add_prefix(d: typing.Dict[str, typing.Any], prefix: str) -> typing.Dict[str, typing.Any]:
     """ Add a prefix to the keys of a dict. """
@@ -56,13 +34,23 @@ def with_prefix(x, prefix):
     ))
 
 
-def date_field(**kwargs):
-    return dataclasses.field(metadata=dataclasses_json.config(
-        encoder=str,
-        decoder=lambda x: datetime.datetime.strptime(x, '%Y-%m-%d').date(),
-        mm_field=marshmallow.fields.Date(),
-        **kwargs
-    ))
+def skip_none(f):
+    def g(x, *args, **kwargs):
+        if x is None:
+            return None
+        return f(x)
+
+
+def date_field(default=dataclasses.MISSING, **kwargs):
+    return dataclasses.field(
+        default=default,
+        metadata=dataclasses_json.config(
+            encoder=skip_none(str),
+            decoder=skip_none(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d').date()),
+            mm_field=marshmallow.fields.Date(),
+            **kwargs
+        )
+    )
 
 
 def iso_datetime_field(**kwargs):
@@ -70,6 +58,15 @@ def iso_datetime_field(**kwargs):
         encoder=datetime.datetime.isoformat,
         decoder=datetime.datetime.fromisoformat,
         mm_field=marshmallow.fields.DateTime(format='iso'),
+        **kwargs
+    ))
+
+
+def time_field(**kwargs):
+    return dataclasses.field(metadata=dataclasses_json.config(
+        encoder=str,
+        decoder=lambda x: datetime.datetime.strptime(x, '%H:%M:%S.%f').time(),
+        mm_field=marshmallow.fields.Time(),
         **kwargs
     ))
 
@@ -137,7 +134,6 @@ class Country:
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-@json_prefix(prefix='team_')
 class Team:
     id: int
     name: str
@@ -195,11 +191,7 @@ class Match:
     competition: Competition = with_prefix(Competition, 'competition_')
     season: Season = with_prefix(Season, 'season_')
     date: datetime.date = date_field(field_name='match_date')
-    kick_off: datetime.time = dataclasses.field(metadata=dataclasses_json.config(
-        encoder=str,
-        decoder=lambda x: datetime.datetime.strptime(x, '%H:%M:%S.%f').time(),
-        mm_field=marshmallow.fields.Time()
-    ))
+    kick_off: datetime.time = time_field()
     match_week: int
     status: MatchStatus = dataclasses.field(metadata=dataclasses_json.config(field_name='match_status'))
     competition_stage: CompetitionStage
@@ -217,17 +209,20 @@ class Match:
 class Player:
     id: int
     name: str
-    birth_date: datetime.date = date_field(field_name='birth_date')
-    gender: Gender
-    height: float
-    weight: float
-    country: Country
+    birth_date: typing.Optional[datetime.date] = date_field(
+        field_name='birth_date',
+        default=None
+    )
+    gender: typing.Optional[Gender] = None
+    height: typing.Optional[float] = None
+    weight: typing.Optional[float] = None
+    country: typing.Optional[Country] = None
     nickname: typing.Optional[str] = None
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
-class PlayerLineup:
+class LineupPlayer:
     player_id: int
     player_name: str
     player_nickname: typing.Optional[str]
@@ -254,13 +249,12 @@ class PlayerLineup:
         object.__setattr__(self, 'player', player)
 
 
-
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class Lineup:
     team_id: int
     team_name: int
-    lineup: typing.List[PlayerLineup]
+    lineup: typing.List[LineupPlayer]
 
     team: typing.Optional[Team] = None
 
@@ -299,19 +293,17 @@ class TacticPlayer:
     # TODO: better name
     player: Player  # NB no prefix
     position: Position
+    jersey_number: int
 
 
-# @dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class Tactics:
-    formation: str
-    # TODO: work out how to define this as a field with encoder and decoder? Maybe do the same for Lineup?
-    lineup: typing.List[typing.Tuple[TacticPlayer, PlayerLineup]]
+    formation: int
+    lineup: typing.List[TacticPlayer]
 
     def __post_init__(self):
-        n_players = sum(int(i) for i in self.formation)
-        if n_players > 10:
-            raise TypeError(f'Formations must have 10 outfield players of fewer! {self.formation} has {n_players}.')
+        object.__setattr__(self, 'formation', str(self.formation))
 
 
 # Event qualifiers
@@ -349,17 +341,17 @@ class BallReceipt(EventMetadata):
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class BallRecovery(EventMetadata):
-    offensive: bool
-    recovery_failure: bool
+    recovery_failure: typing.Optional[bool] = None
+    offensive: typing.Optional[bool] = None
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class Block(EventMetadata):
-    deflection: bool
-    offensive: bool
-    save_block: bool
-    counterpress: bool
+    deflection: typing.Optional[bool] = None
+    offensive: typing.Optional[bool] = None
+    save_block: typing.Optional[bool] = None
+    counterpress: typing.Optional[bool] = None
 
 
 @dataclasses_json.dataclass_json
@@ -371,16 +363,20 @@ class Carry(EventMetadata):
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class Clearance(EventMetadata):
-    aerial_won: bool
-    body_part: StatsBombObject
+    body_part: typing.Optional[StatsBombObject] = None
+    aerial_won: typing.Optional[bool] = None
+
+    head: typing.Optional[bool] = None
+    right_foot: typing.Optional[bool] = None
+    left_foot: typing.Optional[bool] = None
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class Dribble(EventMetadata):
-    overrun: bool
-    nutmeg: bool
     outcome: StatsBombObject
+    overrun: typing.Optional[bool] = None
+    nutmeg: typing.Optional[bool] = None
     no_touch: typing.Optional[bool] = None
 
 
@@ -393,38 +389,39 @@ class DribbledPast(EventMetadata):
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class Duel(EventMetadata):
-    counterpress: bool
-    type: StatsBombObject
-    outcome: StatsBombObject
+    type: typing.Optional[StatsBombObject] = None
+    outcome: typing.Optional[StatsBombObject] = None
+    counterpress: typing.Optional[bool] = None
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class FoulCommitted(EventMetadata):
-    counterpress: bool
-    offensive: bool
-    type: StatsBombObject
-    advantage: bool
-    penalty: bool
-    card: StatsBombObject
+    type: typing.Optional[StatsBombObject] = None
+    card: typing.Optional[StatsBombObject] = None
+    penalty: typing.Optional[bool] = None
+    advantage: typing.Optional[bool] = None
+    offensive: typing.Optional[bool] = None
+    counterpress: typing.Optional[bool] = None
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class FoulWon(EventMetadata):
-    defensive: bool
-    advantage: bool
-    penalty: bool
+    defensive: typing.Optional[bool] = None
+    advantage: typing.Optional[bool] = None
+    penalty: typing.Optional[bool] = None
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class Goalkeeper(EventMetadata):
-    position: StatsBombObject
-    technique: StatsBombObject
-    body_part: StatsBombObject
-    type: StatsBombObject
-    outcome: StatsBombObject
+    outcome: typing.Optional[StatsBombObject] = None
+    body_part: typing.Optional[StatsBombObject] = None
+    position: typing.Optional[StatsBombObject] = None
+    technique: typing.Optional[StatsBombObject] = None
+    type: typing.Optional[StatsBombObject] = None
+    end_location: typing.Optional[typing.List[float]] = None
 
 
 @dataclasses_json.dataclass_json
@@ -455,30 +452,35 @@ class Interception(EventMetadata):
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class Miscontrol(EventMetadata):
-    aerial_won: bool
+    aerial_won: typing.Optional[bool] = None
 
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
 class Pass(EventMetadata):
-    recipient: Player  # NB no prefix
     length: float
     angle: float
     height: StatsBombObject
     end_location: typing.List[float]
-    body_part: StatsBombObject
-    type: StatsBombObject
+    recipient: typing.Optional[Player] = None
+    body_part: typing.Optional[StatsBombObject] = None
+    type: typing.Optional[StatsBombObject] = None
     outcome: typing.Optional[StatsBombObject] = None
     technique: typing.Optional[StatsBombObject] = None
+    aerial_won: typing.Optional[bool] = None
     assisted_shot_id: typing.Optional[uuid.UUID] = None
+    inswinging: typing.Optional[bool] = None
+    outswinging: typing.Optional[bool] = None
     backheel: typing.Optional[bool] = None
     deflected: typing.Optional[bool] = None
     miscommunication: typing.Optional[bool] = None
     cross: typing.Optional[bool] = None
     cut_back: typing.Optional[bool] = None
     switch: typing.Optional[bool] = None
+    through_ball: typing.Optional[bool] = None
     shot_assist: typing.Optional[bool] = None
     goal_assist: typing.Optional[bool] = None
+    xclaim: typing.Optional[float] = None
 
 
 @dataclasses_json.dataclass_json
@@ -495,20 +497,30 @@ class Pressure(EventMetadata):
 
 @dataclasses_json.dataclass_json
 @dataclasses.dataclass(frozen=True)
+class FreezeFrame(EventMetadata):
+    location: typing.List[float]
+    player: Player
+    position: Position
+    teammate: bool
+
+
+@dataclasses_json.dataclass_json
+@dataclasses.dataclass(frozen=True)
 class Shot(EventMetadata):
-    key_pass_id: uuid.UUID
     end_location: typing.List[float]
-    aerial_won: bool
-    follows_dribble: bool
-    first_time: bool
-    freeze_frame: ...
-    open_goal: bool
     statsbomb_xg: float
-    deflected: bool
     technique: StatsBombObject
     body_part: StatsBombObject
     type: StatsBombObject
     outcome: StatsBombObject
+    freeze_frame: typing.Optional[typing.List[FreezeFrame]] = None
+    key_pass_id: typing.Optional[uuid.UUID] = None
+    aerial_won: typing.Optional[bool] = None
+    follows_dribble: typing.Optional[bool] = None
+    first_time: typing.Optional[bool] = None
+    open_goal: typing.Optional[bool] = None
+    deflected: typing.Optional[bool] = None
+    statsbomb_xg2: typing.Optional[float] = None
 
 
 @dataclasses_json.dataclass_json
@@ -524,26 +536,30 @@ class Event:
     id: uuid.UUID
     index: int
     period: int
-    timestamp: ...
+    timestamp: datetime.time = time_field()
     minute: int
     second: int
-    duration: float
     type: EventType
     possession: int
-    possession_team: Team  # NB without prefix!
+    possession_team: Team
     play_pattern: PlayPattern
-    team: Team  # NB without prefix!
-    player: Player  # NB without prefix!
-    position: Position
-    location: typing.List[float]
-    under_pressure: typing.Optional[bool]
-    off_camera: typing.Optional[bool]
-    out: typing.Optional[bool]
-    related_events: typing.List[uuid.UUID]
-    tactics: typing.Optional[uuid.UUID]
+    team: Team
+    duration: typing.Optional[float] = None
+    related_events: typing.List[uuid.UUID] = dataclasses.field(default_factory=lambda: [])
+    location: typing.Optional[typing.List[float]] = None
+    under_pressure: typing.Optional[bool] = None
+    off_camera: typing.Optional[bool] = None
+    out: typing.Optional[bool] = None
+    player: typing.Optional[Player] = None
+    position: typing.Optional[Position] = None
+    tactics: typing.Optional[Tactics] = None
+    counterpress: typing.Optional[bool] = None
 
     # Nested event metadata
-    fifty_fifty: typing.Optional[FiftyFifty] = dataclasses.field(metadata=dataclasses_json.config(field_name='50_50'))
+    fifty_fifty: typing.Optional[FiftyFifty] = dataclasses.field(
+        default=None,
+        metadata=dataclasses_json.config(field_name='50_50')
+    )
     bad_behaviour: typing.Optional[BadBehaviour] = None
     ball_receipt: typing.Optional[BallReceipt] = None
     ball_recovery: typing.Optional[BallRecovery] = None
@@ -561,7 +577,10 @@ class Event:
     injury_stoppage: typing.Optional[InjuryStoppage] = None
     interception: typing.Optional[Interception] = None
     miscontrol: typing.Optional[Miscontrol] = None
-    pass_: typing.Optional[Pass] = None
+    pass_: typing.Optional[Pass] = dataclasses.field(
+        default=None,
+        metadata=dataclasses_json.config(field_name='pass')
+    )
     player_off: typing.Optional[PlayerOff] = None
     pressure: typing.Optional[Pressure] = None
     shot: typing.Optional[Shot] = None
@@ -581,6 +600,10 @@ def parse_matches(response: typing.List[typing.Dict[str, typing.Any]]) -> typing
 def parse_lineups(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[Lineup]:
     l1, l2 = response
     return [Lineup.from_dict(l1), Lineup.from_dict(l2)]
+
+
+def parse_events(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[Event]:
+    return Event.schema().load(response, many=True)
 
 
 # Extracting objects from parsed json
