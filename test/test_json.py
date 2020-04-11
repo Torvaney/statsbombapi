@@ -10,6 +10,13 @@ import statsbombapi.json as sb_json
 import data
 
 
+
+@hypothesis.given(st.text(), st.lists(st.text()), st.lists(st.integers()))
+def test_prefix(prefix, ks, vals):
+    d = dict(zip(ks, vals))
+    assert sb_json.remove_prefix(sb_json.add_prefix(d, prefix), prefix) == d
+
+
 def test_extract_unit():
     assert set(sb_json.extract(int, 1)) == {1}
     assert set(sb_json.extract(str, 'a')) == {'a'}

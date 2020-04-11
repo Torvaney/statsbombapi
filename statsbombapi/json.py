@@ -37,9 +37,15 @@ def add_prefix(d: typing.Dict[str, typing.Any], prefix: str) -> typing.Dict[str,
     return {prefix + k: v for k, v in d.items()}
 
 
+def _strip_prefix(text, prefix):
+    if text.startswith(prefix):
+        return text[len(prefix):]
+    return text
+
+
 def remove_prefix(d: typing.Dict[str, typing.Any], prefix: str) -> typing.Dict[str, typing.Any]:
     """ Remove a prefix from the keys of a dict. """
-    return {k.lstrip(prefix): v for k, v in d.items()}
+    return {_strip_prefix(k, prefix): v for k, v in d.items()}
 
 
 def with_prefix(x, prefix):
