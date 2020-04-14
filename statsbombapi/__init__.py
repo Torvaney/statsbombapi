@@ -11,3 +11,8 @@ from statsbombapi.json import (
     parse_events,
     extract
 )
+from statsbombapi.client import (
+    StatsbombPublic,
+    StatsbombAPI,
+    StatsbombAPIException
+)
