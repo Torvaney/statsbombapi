@@ -9,7 +9,6 @@ import hypothesis.strategies as st
 
 import statsbombapi.json as sb_json
 import data
-import events
 
 
 @hypothesis.given(st.text(), st.lists(st.text()), st.lists(st.integers()))
