@@ -1,4 +1,4 @@
-from statsbombapi.json.data import (
+from .data import (
     Gender,
     Competition,
     Season,
@@ -47,7 +47,7 @@ from statsbombapi.json.data import (
     Substitution,
     Event
 )
-from statsbombapi.json.parse import(
+from .parse import(
     parse_competitions,
     parse_events,
     parse_lineups,
