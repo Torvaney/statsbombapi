@@ -27,6 +27,12 @@ def parse_events(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.
 # Extracting objects from parsed json
 
 def extract(target, obj):
+    """
+    Recursively extract any objects within `obj` that are instances of `target`.
+
+    If `obj` is a dataclass, extract will search each field's values for instances
+    of `target`.
+    """
     if isinstance(obj, target):
         yield obj
     elif isinstance(obj, collections.abc.Iterable):
