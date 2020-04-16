@@ -1,9 +1,9 @@
 import typing
+import warnings
 
 import requests
 
 import statsbombapi.json
-
 from statsbombapi.json import data
 
 
@@ -81,6 +81,14 @@ class BaseAPIClient:
 
 class StatsbombPublic(BaseAPIClient):
     BASE_URL = 'https://raw.githubusercontent.com/statsbomb/open-data/master/data'
+
+    def __init__(self):
+        super().__init__()
+        warnings.warn(
+            'Please be responsible with Statsbomb data and make sure you have '
+            'registered your details on https://www.statsbomb.com/resource-centre, '
+            'and read and accepted the User Agreement (available on the same page).'
+        )
 
     def _get_competitions(self):
         return requests.get(f'{self.BASE_URL}/competitions.json')
