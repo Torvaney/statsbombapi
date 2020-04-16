@@ -2,7 +2,7 @@ import collections.abc
 import dataclasses
 import typing
 
-from statsbombapi.json import data
+from . import data
 
 
 # Parse routes
