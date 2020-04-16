@@ -4,6 +4,8 @@ API wrapper and dataclasses for Statsbomb data
 
 ## Installation
 
+To get the latest version from GitHub:
+
 ``` bash
 pip install git+https://github.com/torvaney/statsbombapi.git
 ```
@@ -15,7 +17,9 @@ pip install git+https://github.com/torvaney/statsbombapi.git
 
 # Connect to the Public Data Repo
 >>> api = statsbombapi.StatsbombPublic()
-UserWarning: Please be responsible with Statsbomb data and make sure you have registered your details on https://www.statsbomb.com/resource-centre, and read and accepted the User Agreement (available on the same page).
+UserWarning: Please be responsible with Statsbomb data and make sure you have
+ registered your details on https://www.statsbomb.com/resource-centre, and read and
+ accepted the User Agreement (available on the same page).
   warnings.warn(statsbomb_data_advice)
 
 # Or, if connecting to the API proper
@@ -93,7 +97,8 @@ Season(id=42, name='2019/2020')
 >>> # Same as before...
 >>> players = set(statsbombapi.extract(statsbombapi.Player, lineups))
 >>> list(players)[0]
-Player(id=15616, name='Kim Little', birth_date=None, gender=None, height=None, weight=None, country=Country(id=201, name='Scotland'), nickname=None)
+Player(id=15616, name='Kim Little', birth_date=None, gender=None, height=None, weight=None,
+ country=Country(id=201, name='Scotland'), nickname=None)
 ```
 
 ### Events
@@ -102,7 +107,21 @@ Player(id=15616, name='Kim Little', birth_date=None, gender=None, height=None, w
 >>> # Last, but certainly not least
 >>> events = api.events(match_id=2275086)
 >>> events[224]
-Event(id=UUID('8b7f985e-2fa5-4b08-9893-0d1b77cf7076'), index=225, period=1, timestamp=datetime.time(0, 4, 35, 263000), minute=4, second=35, type=EventType(id=43, name='Carry'), possession=13, possession_team=Team(id=968, name='Arsenal WFC', gender=None, country=None), play_pattern=PlayPattern(id=4, name='From Throw In'), team=Team(id=968, name='Arsenal WFC', gender=None, country=None), duration=0.444403, related_events=[UUID('7eed3cb4-b02c-4ddb-bb98-1526cd4c89d5'), UUID('8af13ea5-1b32-4ea2-91fd-93756979744d')], location=[28.6, 20.8], under_pressure=None, off_camera=None, out=None, player=Player(id=10405, name='Lia Wälti', birth_date=None, gender=None, height=None, weight=None, country=None, nickname=None), position=Position(id=2, name='Right Back'), tactics=None, counterpress=None, fifty_fifty=None, bad_behaviour=None, ball_receipt=None, ball_recovery=None, block=None, carry=Carry(end_location=[28.6, 20.8]), clearance=None, dribble=None, dribbled_past=None, duel=None, foul_committed=None, foul_won=None, goalkeeper=None, half_end=None, half_start=None, injury_stoppage=None, interception=None, miscontrol=None, pass_=None, player_off=None, pressure=None, shot=None, substitution=None)
+Event(id=UUID('8b7f985e-2fa5-4b08-9893-0d1b77cf7076'), index=225, period=1,
+ timestamp=datetime.time(0, 4, 35, 263000), minute=4, second=35,
+ type=EventType(id=43, name='Carry'), possession=13,
+ possession_team=Team(id=968, name='Arsenal WFC', gender=None, country=None),
+ play_pattern=PlayPattern(id=4, name='From Throw In'),
+ team=Team(id=968, name='Arsenal WFC', gender=None, country=None),
+ duration=0.444403, related_events=[UUID('7eed3cb4-b02c-4ddb-bb98-1526cd4c89d5'), UUID('8af13ea5-1b32-4ea2-91fd-93756979744d')],
+ location=[28.6, 20.8], under_pressure=None, off_camera=None, out=None,
+ player=Player(id=10405, name='Lia Wälti', birth_date=None, gender=None, height=None, weight=None, country=None, nickname=None),
+ position=Position(id=2, name='Right Back'), tactics=None, counterpress=None,
+ fifty_fifty=None, bad_behaviour=None, ball_receipt=None, ball_recovery=None,
+ block=None, carry=Carry(end_location=[28.6, 20.8]), clearance=None, dribble=None,
+ dribbled_past=None, duel=None, foul_committed=None, foul_won=None, goalkeeper=None,
+ half_end=None, half_start=None, injury_stoppage=None, interception=None,
+ miscontrol=None, pass_=None, player_off=None, pressure=None, shot=None, substitution=None)
 ```
 
 ## Yet another statsbomb API package?!
