@@ -40,7 +40,7 @@ Competition(id=37, name="FA Women's Super League", gender=<Gender.FEMALE: 'femal
 >>> competitions[0].season
 Season(id=42, name='2019/2020')
 
->>> competitions[0].match_available, competitions[0].match_available
+>>> competitions[0].match_updated, competitions[0].match_available
 (datetime.datetime(2020, 3, 11, 14, 9, 41, 932138),
  datetime.datetime(2020, 3, 11, 14, 9, 41, 932138))
 
