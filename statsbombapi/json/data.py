@@ -185,15 +185,15 @@ class Match:
     date: datetime.date = date_field(field_name='match_date')
     kick_off: datetime.time = time_field()
     match_week: int
-    status: MatchStatus = dataclasses.field(metadata=dataclasses_json.config(field_name='match_status'))
     competition_stage: CompetitionStage
+    metadata: MatchMetadata
     home_team: Team = with_prefix(Team, 'home_team_')
     away_team: Team = with_prefix(Team, 'away_team_')
-    home_score: typing.Optional[int]
-    away_score: typing.Optional[int]
-    referee: Referee
-    metadata: MatchMetadata
+    status: MatchStatus = dataclasses.field(metadata=dataclasses_json.config(field_name='match_status'))
     last_updated: datetime.datetime = iso_datetime_field()
+    home_score: typing.Optional[int] = None
+    away_score: typing.Optional[int] = None
+    referee: typing.Optional[Referee] = None
 
 
 @dataclasses_json.dataclass_json
@@ -217,12 +217,12 @@ class Player:
 class LineupPlayer:
     player_id: int
     player_name: str
-    player_gender: Gender
-    birth_date: datetime.date = date_field(field_name='birth_date')
-    player_height: float
-    player_weight: float
     country: Country
     jersey_number: int
+    birth_date: typing.Optional[datetime.date] = date_field(default=None, field_name='birth_date')
+    player_height: typing.Optional[float] = None
+    player_weight: typing.Optional[float] = None
+    player_gender: typing.Optional[Gender] = None
     player_nickname: typing.Optional[str] = None
 
     player: typing.Optional[Player] = None
@@ -311,33 +311,33 @@ class StatsBombObject:
     name: str
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class FiftyFifty(EventMetadata):
     outcome: StatsBombObject
     counterpress: typing.Optional[bool] = None
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class BadBehaviour(EventMetadata):
     card: StatsBombObject
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class BallReceipt(EventMetadata):
     outcome: StatsBombObject
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class BallRecovery(EventMetadata):
     recovery_failure: typing.Optional[bool] = None
     offensive: typing.Optional[bool] = None
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class Block(EventMetadata):
     deflection: typing.Optional[bool] = None
@@ -346,24 +346,20 @@ class Block(EventMetadata):
     counterpress: typing.Optional[bool] = None
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class Carry(EventMetadata):
     end_location: typing.List[float]
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class Clearance(EventMetadata):
     body_part: typing.Optional[StatsBombObject] = None
     aerial_won: typing.Optional[bool] = None
 
-    head: typing.Optional[bool] = None
-    right_foot: typing.Optional[bool] = None
-    left_foot: typing.Optional[bool] = None
 
-
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class Dribble(EventMetadata):
     outcome: StatsBombObject
@@ -372,13 +368,13 @@ class Dribble(EventMetadata):
     no_touch: typing.Optional[bool] = None
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class DribbledPast(EventMetadata):
     counterpress: bool
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class Duel(EventMetadata):
     type: typing.Optional[StatsBombObject] = None
@@ -386,7 +382,7 @@ class Duel(EventMetadata):
     counterpress: typing.Optional[bool] = None
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class FoulCommitted(EventMetadata):
     type: typing.Optional[StatsBombObject] = None
@@ -397,7 +393,7 @@ class FoulCommitted(EventMetadata):
     counterpress: typing.Optional[bool] = None
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class FoulWon(EventMetadata):
     defensive: typing.Optional[bool] = None
@@ -405,7 +401,7 @@ class FoulWon(EventMetadata):
     penalty: typing.Optional[bool] = None
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class Goalkeeper(EventMetadata):
     outcome: typing.Optional[StatsBombObject] = None
@@ -435,19 +431,19 @@ class InjuryStoppage(EventMetadata):
     in_chain: bool
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class Interception(EventMetadata):
     outcome: StatsBombObject
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class Miscontrol(EventMetadata):
     aerial_won: typing.Optional[bool] = None
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class Pass(EventMetadata):
     length: float
@@ -461,15 +457,12 @@ class Pass(EventMetadata):
     technique: typing.Optional[StatsBombObject] = None
     aerial_won: typing.Optional[bool] = None
     assisted_shot_id: typing.Optional[uuid.UUID] = None
-    inswinging: typing.Optional[bool] = None
-    outswinging: typing.Optional[bool] = None
     backheel: typing.Optional[bool] = None
     deflected: typing.Optional[bool] = None
     miscommunication: typing.Optional[bool] = None
     cross: typing.Optional[bool] = None
     cut_back: typing.Optional[bool] = None
     switch: typing.Optional[bool] = None
-    through_ball: typing.Optional[bool] = None
     shot_assist: typing.Optional[bool] = None
     goal_assist: typing.Optional[bool] = None
     xclaim: typing.Optional[float] = None
@@ -496,7 +489,7 @@ class FreezeFrame(EventMetadata):
     teammate: bool
 
 
-@dataclasses_json.dataclass_json
+@dataclasses_json.dataclass_json(undefined=dataclasses_json.Undefined.EXCLUDE)
 @dataclasses.dataclass(frozen=True)
 class Shot(EventMetadata):
     end_location: typing.List[float]
@@ -512,6 +505,7 @@ class Shot(EventMetadata):
     first_time: typing.Optional[bool] = None
     open_goal: typing.Optional[bool] = None
     deflected: typing.Optional[bool] = None
+    one_on_one: typing.Optional[bool] = None
     statsbomb_xg2: typing.Optional[float] = None
 
 
