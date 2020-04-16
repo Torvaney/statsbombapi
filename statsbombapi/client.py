@@ -84,11 +84,12 @@ class StatsbombPublic(BaseAPIClient):
 
     def __init__(self):
         super().__init__()
-        warnings.warn(
+        statsbomb_data_advice = (
             'Please be responsible with Statsbomb data and make sure you have '
             'registered your details on https://www.statsbomb.com/resource-centre, '
             'and read and accepted the User Agreement (available on the same page).'
         )
+        warnings.warn(statsbomb_data_advice)
 
     def _get_competitions(self):
         return requests.get(f'{self.BASE_URL}/competitions.json')
