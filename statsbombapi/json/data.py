@@ -1,12 +1,11 @@
+import dataclasses
 import datetime
 import enum
 import marshmallow
 import typing
 import uuid
 
-import dataclasses
 import dataclasses_json
-
 
 
 def add_prefix(d: typing.Dict[str, typing.Any], prefix: str) -> typing.Dict[str, typing.Any]:

@@ -6,12 +6,13 @@ with open('README.md', 'r', encoding='utf8') as f:
 setup(
     name='statsbombapi',
     version='0.0.1-dev',
-    packages=['statsbombapi',],
+    packages=setuptools.find_packages(),
     license='Creative Commons Attribution-Noncommercial-Share Alike license',
     long_description=readme,
     python_requires='>=3.6',
     install_requires=[
         'dataclasses-json>=0.4.2',
+        'requests>=2.23.0'
     ],
     extras_require={
         'dev': [

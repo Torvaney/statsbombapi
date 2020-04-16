@@ -3,8 +3,7 @@ import warnings
 
 import requests
 
-import statsbombapi.json
-from statsbombapi.json import data
+from .json import data, parse
 
 
 class StatsbombAPIException(Exception):
@@ -54,28 +53,28 @@ class BaseAPIClient:
         """ Get competitions data from StatsBomb """
         return self._get_and_parse(
             self._get_competitions(),
-            statsbombapi.json.parse_competitions
+            parse.parse_competitions
         )
 
     def matches(self, competition_id: int, season_id: int) -> typing.List[data.Match]:
         """ Get matches data from StatsBomb """
         return self._get_and_parse(
             self._get_matches(competition_id, season_id),
-            statsbombapi.json.parse_matches
+            parse.parse_matches
         )
 
     def lineups(self, match_id: int) -> typing.List[data.Lineup]:
         """ Get lineups data from StatsBomb """
         return self._get_and_parse(
             self._get_lineups(match_id),
-            statsbombapi.json.parse_lineups
+            parse.parse_lineups
         )
 
     def events(self, match_id: int) -> typing.List[data.Event]:
         """ Get events data from StatsBomb """
         return self._get_and_parse(
             self._get_events(match_id),
-            statsbombapi.json.parse_events
+            parse.parse_events
         )
 
 
