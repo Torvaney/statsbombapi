@@ -134,11 +134,11 @@ There are some great pre-existing packages for working with statsbomb data:
 * https://github.com/statsbomb/statsbombpy
 * https://github.com/imrankhan17/statsbomb-parser
 
-However, these are primarily built around fetching Statsbomb data as dataframes.
+These are primarily built around fetching Statsbomb data as dataframes.
 This is great for interactive work (for example, in a jupyter notebook) and you
 should definitely consider whether they match your use-case.
 
-I have found that this approach sometimes isn't ideal when developing data pipelines
+However, I have found that this approach sometimes isn't ideal when developing data pipelines
 and doing ETL. By parsing data from the Statsbomb API into specific data structures,
 I hope that this package can make these situations easier.
 
