@@ -4,7 +4,7 @@ from . import ReadOnlyAdapter
 from .utils import HTTPFetcher
 
 
-class GithubAdapter(ReadOnlyAdapter):
+class GithubHTTPSAdapter(ReadOnlyAdapter):
     def __init__(self):
         statsbomb_data_advice = (
             'Please be responsible with Statsbomb data and make sure you have '

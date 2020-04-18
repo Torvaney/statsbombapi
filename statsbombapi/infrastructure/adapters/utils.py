@@ -3,7 +3,7 @@ import os
 import requests
 import json
 
-from ..exception import StatsbombAPIException
+from ...exception import StatsbombAPIException
 
 
 class HTTPFetcher(object):
