@@ -1,4 +1,4 @@
 from .base import ReadOnlyAdapter
-from .github import GithubRepository
-from .local import LocalRepository
-from .statsbomb_services import StatsbombServicesRepository
+from .github import GithubHTTPSAdapter
+from .local import LocalAdapter
+from .statsbomb_services import StatsbombServicesAdapter

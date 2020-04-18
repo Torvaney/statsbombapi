@@ -26,7 +26,10 @@ UserWarning: Please be responsible with Statsbomb data and make sure you have
 >>> api = statsbombapi.get_api_client(username='...', password='...')
 
 # Or, use local file system (works with a checkout of the open-data github repo)
->>> api = statsbombapi.get_local_client(base_path='/home/ben/statsbomb/open-data/data')
+>>> api = statsbombapi.get_local_client(base_dir='/home/ben/statsbomb/open-data/data')
+
+To speedup the loading process it's possible to enable caching. This will cache the fetching AND the unserializing of the data. Speedup will be around 100x for event data. Caching can be enable for all sources.
+>>> api = statsbombapi.get_public_client(caching_dir='/tmp/caching_dir')
 ```
 
 The Statsbomb API provides 4 routes, which can be accessed by calling the
