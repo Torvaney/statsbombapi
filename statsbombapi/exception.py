@@ -1,0 +1,2 @@
+class StatsbombAPIException(Exception):
+    pass

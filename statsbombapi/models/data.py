@@ -244,7 +244,7 @@ class LineupPlayer:
 @dataclasses.dataclass(frozen=True)
 class Lineup:
     team_id: int
-    team_name: int
+    team_name: str
     lineup: typing.List[LineupPlayer]
 
     team: typing.Optional[Team] = None

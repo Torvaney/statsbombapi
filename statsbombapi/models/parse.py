@@ -7,21 +7,21 @@ from . import data
 
 # Parse routes
 
-def parse_competitions(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[data.CompetitionSeason]:
-    return data.CompetitionSeason.schema().load(response, many=True)
+def parse_competitions(json: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[data.CompetitionSeason]:
+    return data.CompetitionSeason.schema().load(json, many=True)
 
 
-def parse_matches(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[data.Match]:
-    return [data.Match.from_dict(d) for d in response]
+def parse_matches(json: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[data.Match]:
+    return [data.Match.from_dict(d) for d in json]
 
 
-def parse_lineups(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[data.Lineup]:
-    l1, l2 = response
+def parse_lineups(json: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[data.Lineup]:
+    l1, l2 = json
     return [data.Lineup.from_dict(l1), data.Lineup.from_dict(l2)]
 
 
-def parse_events(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[data.Event]:
-    return data.Event.schema().load(response, many=True)
+def parse_events(json: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[data.Event]:
+    return data.Event.schema().load(json, many=True)
 
 
 # Extracting objects from parsed json

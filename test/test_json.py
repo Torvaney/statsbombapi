@@ -7,8 +7,10 @@ import uuid
 import hypothesis
 import hypothesis.strategies as st
 
-import statsbombapi.json as sb_json
+import statsbombapi.models as sb_json
 import data
+
+from statsbombapi import Gender
 
 
 @hypothesis.given(st.text(), st.lists(st.text()), st.lists(st.integers()))
@@ -29,7 +31,7 @@ def test_extract_unit():
     competition_season = sb_json.CompetitionSeason(
         competition_id=1,
         competition_name='ok',
-        competition_gender='female',
+        competition_gender=sb_json.Gender.FEMALE,
         country_name='trytegrw',
         season_id=1,
         season_name='2020/2021',
@@ -37,7 +39,7 @@ def test_extract_unit():
         match_available=datetime.datetime(2020, 1, 1)
     )
     assert set(sb_json.extract(sb_json.Season, competition_season)) == {sb_json.Season(1, '2020/2021')}
-    assert set(sb_json.extract(sb_json.Competition, competition_season)) == {sb_json.Competition(1, 'ok', 'female', 'trytegrw')}
+    assert set(sb_json.extract(sb_json.Competition, competition_season)) == {sb_json.Competition(1, 'ok', sb_json.Gender.FEMALE, 'trytegrw')}
 
 
 @hypothesis.given(st.lists(st.integers()))
