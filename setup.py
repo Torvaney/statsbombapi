@@ -9,7 +9,7 @@ setup(
     packages=setuptools.find_packages(),
     license='Creative Commons Attribution-Noncommercial-Share Alike license',
     long_description=readme,
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     install_requires=[
         'dataclasses-json>=0.4.2',
         'requests>=2.23.0'
