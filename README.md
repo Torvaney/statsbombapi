@@ -16,7 +16,7 @@ pip install git+https://github.com/torvaney/statsbombapi.git
 >>> import statsbombapi
 
 # Connect to the Public Data Repo
->>> client = statsbombapi.get_public_client()
+>>> api = statsbombapi.get_public_client()
 UserWarning: Please be responsible with Statsbomb data and make sure you have
  registered your details on https://www.statsbomb.com/resource-centre, and read and
  accepted the User Agreement (available on the same page).

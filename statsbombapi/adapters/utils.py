@@ -13,6 +13,10 @@ class HTTPFetcher(object):
 
     @staticmethod
     def handle_non_ok_code(response):
+        """
+            Subclass this method to handle non-200 error codes in a specific way.
+            For example, you may want to add logging
+        """
         raise StatsbombAPIException(
             f'Unexpected error code when trying to reach {response.url}: {response.status_code}')
 
