@@ -1,8 +1,10 @@
 import typing
 from pickle import loads, dumps
 
-from models import data
 from . import Serializer
+
+
+from ...models import data
 
 
 class BinaryPickleSerializer(Serializer):
