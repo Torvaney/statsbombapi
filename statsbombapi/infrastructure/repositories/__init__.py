@@ -3,10 +3,20 @@ import pickle
 import typing
 from abc import ABC, abstractmethod
 
-from ..adapters import GithubHTTPSAdapter, LocalAdapter, StatsbombServicesAdapter
-from ..serializers import DataclassesJsonSerializer
-from ..adapters import ReadOnlyAdapter
-from ..serializers import Serializer
+from ...exception import NotFound
+from ..adapters import (
+    ReadOnlyAdapter,
+    ReadWriteAdapter,
+
+    GithubHTTPSAdapter,
+    LocalAdapter,
+    StatsbombServicesAdapter
+)
+from ..serializers import (
+    Serializer,
+    DataclassesJsonSerializer,
+    BinaryPickleSerializer
+)
 
 from ...models import data
 
@@ -29,77 +39,124 @@ class ReadOnlyRepositoryInterface(ABC):
         raise NotImplementedError
 
 
-class ReadOnlyRepository(ReadOnlyRepositoryInterface):
-    def __init__(self, adapter: ReadOnlyAdapter, serializer: Serializer):
-        self._adapter = adapter
-        self._serializer = serializer
+class RepositoryInterface(ReadOnlyRepositoryInterface):
+    @abstractmethod
+    def save_competitions(self, competitions: typing.List[data.CompetitionSeason]):
+        raise NotImplementedError
+
+    @abstractmethod
+    def save_matches(self, competition_id: int, season_id: int, matches: typing.List[data.Match]):
+        raise NotImplementedError
+
+    @abstractmethod
+    def save_lineups(self, match_id: int, lineups: typing.List[data.Lineup]):
+        raise NotImplementedError
+
+    @abstractmethod
+    def save_events(self, match_id: int, events: typing.List[data.Event]):
+        raise NotImplementedError
+
+
+class _ReadMethodsMixin(object):
+    _serializer: Serializer
+    _adapter: ReadOnlyAdapter
 
     def get_competitions(self) -> typing.List[data.CompetitionSeason]:
         """ Get competitions data from StatsBomb """
         return self._serializer.unserialize_competitions(
-            json=self._adapter.get_competitions()
+            self._adapter.read_competitions()
         )
 
     def get_matches(self, competition_id: int, season_id: int) -> typing.List[data.Match]:
         """ Get matches data from StatsBomb """
         return self._serializer.unserialize_matches(
-            json=self._adapter.get_matches(competition_id, season_id)
+            self._adapter.read_matches(competition_id, season_id)
         )
 
     def get_lineups(self, match_id: int) -> typing.List[data.Lineup]:
         """ Get lineups data from StatsBomb """
-        return self._serializer.unserialize_linesup(
-            json=self._adapter.get_lineups(match_id)
+        return self._serializer.unserialize_lineups(
+            self._adapter.read_lineups(match_id)
         )
 
     def get_events(self, match_id: int) -> typing.List[data.Event]:
         """ Get events data from StatsBomb """
         return self._serializer.unserialize_events(
-            json=self._adapter.get_events(match_id)
+            self._adapter.read_events(match_id)
         )
+
+
+class _WriteMethodsMixin(object):
+    _serializer: Serializer
+    _adapter: ReadWriteAdapter
+
+    def save_competitions(self, competitions: typing.List[data.CompetitionSeason]):
+        return self._adapter.write_competitions(
+            self._serializer.serialize_competitions(competitions)
+        )
+
+    def save_matches(self, competition_id: int, season_id: int, matches: typing.List[data.Match]):
+        return self._adapter.write_matches(
+            competition_id, season_id,
+            self._serializer.serialize_matches(matches)
+        )
+
+    def save_lineups(self, match_id: int, lineups: typing.List[data.Lineup]):
+        return self._adapter.write_lineups(
+            match_id,
+            self._serializer.serialize_lineups(lineups)
+        )
+
+    def save_events(self, match_id: int, events: typing.List[data.Event]):
+        return self._adapter.write_events(
+            match_id,
+            self._serializer.serialize_events(events)
+        )
+
+
+class ReadOnlyRepository(_ReadMethodsMixin, ReadOnlyRepositoryInterface):
+    def __init__(self, adapter: ReadOnlyAdapter, serializer: Serializer):
+        self._adapter = adapter
+        self._serializer = serializer
+
+
+class Repository(_ReadMethodsMixin, _WriteMethodsMixin, RepositoryInterface):
+    def __init__(self, adapter: ReadWriteAdapter, serializer: Serializer):
+        self._adapter = adapter
+        self._serializer = serializer
 
 
 class CachingRepositoryProxy(ReadOnlyRepositoryInterface):
     def __init__(self, repository: ReadOnlyRepositoryInterface, base_dir):
-        self._repository = repository
-        self._base_dir = base_dir
+        self._origin_repository = repository
+        self._cache_repository = Repository(
+            adapter=LocalAdapter(base_dir, file_extension='pickle'),
+            serializer=BinaryPickleSerializer()
+        )
 
-    def _check_cache(self, cache_key, origin_fn):
-        file_path = f"{self._base_dir}/{cache_key}.pickle"
+    def _check_cache(self, method_name, *args):
 
-        if not os.path.exists(file_path):
-            result = origin_fn()
-
-            with open(file_path, "wb") as fp:
-                pickle.dump(result, fp)
-        else:
-            with open(file_path, "rb") as fp:
-                result = pickle.load(fp)
+        cache_read = getattr(self._cache_repository, f"get_{method_name}")
+        cache_write = getattr(self._cache_repository, f"save_{method_name}")
+        origin_read = getattr(self._origin_repository, f"get_{method_name}")
+        try:
+            result = cache_read(*args)
+        except NotFound:
+            result = origin_read(*args)
+            cache_write(*args, result)
         return result
 
     def get_competitions(self) -> typing.List[data.CompetitionSeason]:
-        return self._check_cache(
-            cache_key="competitions",
-            origin_fn=lambda: self._repository.get_competitions()
-        )
+        return self._check_cache("competitions")
 
     def get_matches(self, competition_id: int, season_id: int) -> typing.List[data.Match]:
-        return self._check_cache(
-            cache_key=f"matches-{competition_id}-{season_id}",
-            origin_fn=lambda: self._repository.get_matches(competition_id, season_id)
-        )
+        return self._check_cache("matches", competition_id, season_id)
 
     def get_lineups(self, match_id: int) -> typing.List[data.Lineup]:
-        return self._check_cache(
-            cache_key=f"lineups-{match_id}",
-            origin_fn=lambda: self._repository.get_lineups(match_id)
-        )
+        return self._check_cache("lineups", match_id)
 
     def get_events(self, match_id: int) -> typing.List[data.Event]:
-        return self._check_cache(
-            cache_key=f"events-{match_id}",
-            origin_fn=lambda: self._repository.get_events(match_id)
-        )
+        return self._check_cache("events", match_id)
 
 
 def get_github_repository() -> ReadOnlyRepository:
@@ -111,7 +168,7 @@ def get_github_repository() -> ReadOnlyRepository:
 
 def get_local_repository(base_dir) -> ReadOnlyRepository:
     return ReadOnlyRepository(
-        adapter=LocalAdapter(base_dir),
+        adapter=LocalAdapter(base_dir, file_extension='json'),
         serializer=DataclassesJsonSerializer()
     )
 

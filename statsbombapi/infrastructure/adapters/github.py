@@ -17,15 +17,15 @@ class GithubHTTPSAdapter(ReadOnlyAdapter):
             base_url='https://raw.githubusercontent.com/statsbomb/open-data/master/data'
         )
 
-    def get_competitions(self):
+    def read_competitions(self):
         return self._http_fetcher.get('/competitions.json')
 
-    def get_matches(self, competition_id: int, season_id: int):
+    def read_matches(self, competition_id: int, season_id: int):
         return self._http_fetcher.get(f'/matches/{competition_id}/{season_id}.json')
 
-    def get_lineups(self, match_id: int):
+    def read_lineups(self, match_id: int):
         return self._http_fetcher.get(f'/lineups/{match_id}.json')
 
-    def get_events(self, match_id: int):
+    def read_events(self, match_id: int):
         return self._http_fetcher.get(f'/events/{match_id}.json')
 

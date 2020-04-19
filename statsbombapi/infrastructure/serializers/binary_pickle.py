@@ -1,38 +1,31 @@
 import typing
-from abc import ABC, abstractmethod
+from pickle import loads, dumps
 
-from ...models import data
+from models import data
+from . import Serializer
 
 
-class Serializer(ABC):
-    @abstractmethod
+class BinaryPickleSerializer(Serializer):
     def unserialize_competitions(self, s: bytes) -> typing.List[data.CompetitionSeason]:
-        raise NotImplementedError
+        return loads(s)
 
-    @abstractmethod
     def unserialize_matches(self, s: bytes) -> typing.List[data.Match]:
-        raise NotImplementedError
+        return loads(s)
 
-    @abstractmethod
     def unserialize_lineups(self, s: bytes) -> typing.List[data.Lineup]:
-        raise NotImplementedError
+        return loads(s)
 
-    @abstractmethod
     def unserialize_events(self, s: bytes) -> typing.List[data.Event]:
-        raise NotImplementedError
+        return loads(s)
 
-    @abstractmethod
     def serialize_competitions(self, competitions: typing.List[data.CompetitionSeason]) -> bytes:
-        raise NotImplementedError
+        return dumps(competitions)
 
-    @abstractmethod
     def serialize_matches(self, matches: typing.List[data.Match]) -> bytes:
-        raise NotImplementedError
+        return dumps(matches)
 
-    @abstractmethod
     def serialize_lineups(self, lineups: typing.List[data.Lineup]) -> bytes:
-        raise NotImplementedError
+        return dumps(lineups)
 
-    @abstractmethod
     def serialize_events(self, events: typing.List[data.Event]) -> bytes:
-        raise NotImplementedError
+        return dumps(events)
