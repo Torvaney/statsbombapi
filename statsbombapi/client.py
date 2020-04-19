@@ -10,11 +10,11 @@ from .infrastructure import (
 
 
 class APIClient:
-    def __init__(self, repository: ReadOnlyRepositoryInterface, cache_dir='/tmp'):
+    def __init__(self, repository: ReadOnlyRepositoryInterface, caching_dir=None):
         self._repository = (
             repository
-            if not cache_dir else
-            CachingRepositoryProxy(repository=repository, base_dir=cache_dir)
+            if not caching_dir else
+            CachingRepositoryProxy(repository=repository, base_dir=caching_dir)
         )
 
     def competitions(self) -> typing.List[data.CompetitionSeason]:
