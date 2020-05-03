@@ -1,4 +1,7 @@
+import setuptools
+
 from distutils.core import setup
+
 
 with open('README.md', 'r', encoding='utf8') as f:
     readme = f.read()
