@@ -8,9 +8,10 @@ with open('README.md', 'r', encoding='utf8') as f:
 
 setup(
     name='statsbombapi',
+    description='A wrapper for the Statsbomb API and public data.',
     version='0.0.1-dev',
     packages=setuptools.find_packages(),
-    license='Creative Commons Attribution-Noncommercial-Share Alike license',
+    license='GPLv3+',
     long_description=readme,
     python_requires='>=3.7',
     install_requires=[
