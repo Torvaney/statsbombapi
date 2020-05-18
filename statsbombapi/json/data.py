@@ -92,8 +92,8 @@ class CompetitionSeason:
     country_name: str
     season_id: int
     season_name: str
-    match_updated: datetime.datetime = iso_datetime_field()
-    match_available: datetime.datetime = iso_datetime_field()
+    match_updated: typing.Optional = None 
+    match_available: typing.Optional = None
 
     competition: typing.Optional[Competition] = None
     season: typing.Optional[Season] = None
