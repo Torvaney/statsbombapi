@@ -116,7 +116,7 @@ class StatsbombAPI(BaseAPIClient):
         return requests.get(f'{self.BASE_URL}/{version}/competitions/{competition_id}/seasons/{season_id}/matches', auth=self.auth)
 
     def _get_lineups(self, match_id, version='v2'):
-        return requests.get(f'{self.BASE_URL}/{version}/lineups/{match_id}')
+        return requests.get(f'{self.BASE_URL}/{version}/lineups/{match_id}', auth=self.auth)
 
     def _get_events(self, match_id, version='v5'):
-        return requests.get(f'{self.BASE_URL}/{version}/events/{match_id}')
+        return requests.get(f'{self.BASE_URL}/{version}/events/{match_id}', auth=self.auth)
