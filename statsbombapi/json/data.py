@@ -165,6 +165,7 @@ class MatchStatus(enum.Enum):
     PROCESSING = 'processing'
     COLLECTING = 'collecting'
     SCHEDULED = 'scheduled'
+    DELETED = 'deleted'
 
 
 @dataclasses_json.dataclass_json
@@ -184,7 +185,6 @@ class Match:
     date: datetime.date = date_field(field_name='match_date')
     kick_off: datetime.time = time_field()
     match_week: int
-    competition_stage: CompetitionStage
     metadata: MatchMetadata
     home_team: Team = with_prefix(Team, 'home_team_')
     away_team: Team = with_prefix(Team, 'away_team_')
@@ -193,6 +193,7 @@ class Match:
     home_score: typing.Optional[int] = None
     away_score: typing.Optional[int] = None
     referee: typing.Optional[Referee] = None
+    competition_stage: typing.Optional = None
 
 
 @dataclasses_json.dataclass_json
