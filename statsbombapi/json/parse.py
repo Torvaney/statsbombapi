@@ -8,7 +8,9 @@ from . import data
 # Parse routes
 
 def parse_competitions(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[data.CompetitionSeason]:
-    return data.CompetitionSeason.schema().load(response, many=True)
+    # Use `from_dict` + list comprehension to workaround bug in .schema():
+    # `https://github.com/lidatong/dataclasses-json/issues/266`
+    return [data.CompetitionSeason.from_dict(r) for r in response]
 
 
 def parse_matches(response: typing.List[typing.Dict[str, typing.Any]]) -> typing.List[data.Match]:
