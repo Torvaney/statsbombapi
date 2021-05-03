@@ -1,6 +1,7 @@
 from .json import *
 from .client import (
+    APIClient,
     StatsbombPublic,
     StatsbombAPI,
-    StatsbombAPIException
 )
+from .loaders import StatsbombAPIException
