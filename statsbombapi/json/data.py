@@ -49,20 +49,23 @@ def iso_datetime_field(default=dataclasses.MISSING, **kwargs):
         default=default,
         metadata=dataclasses_json.config(
             encoder=datetime.datetime.isoformat,
-            decoder=lambda x: datetime.datetime.fromisoformat(str(x)),
+            decoder=lambda x: datetime.datetime.fromisoformat(str(x)) if x else None,
             mm_field=marshmallow.fields.DateTime(format='iso'),
             **kwargs
         )
     )
 
 
-def time_field(**kwargs):
-    return dataclasses.field(metadata=dataclasses_json.config(
-        encoder=str,
-        decoder=lambda x: datetime.datetime.strptime(x, '%H:%M:%S.%f').time(),
-        mm_field=marshmallow.fields.Time(),
-        **kwargs
-    ))
+def time_field(default=dataclasses.MISSING, **kwargs):
+    return dataclasses.field(
+        default=default,
+        metadata=dataclasses_json.config(
+            encoder=str,
+            decoder=lambda x: datetime.datetime.strptime(x, '%H:%M:%S.%f').time(),
+            mm_field=marshmallow.fields.Time(),
+            **kwargs
+        )
+    )
 
 
 class Gender(enum.Enum):
