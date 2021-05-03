@@ -44,13 +44,16 @@ def date_field(default=dataclasses.MISSING, **kwargs):
     )
 
 
-def iso_datetime_field(**kwargs):
-    return dataclasses.field(metadata=dataclasses_json.config(
-        encoder=datetime.datetime.isoformat,
-        decoder=datetime.datetime.fromisoformat,
-        mm_field=marshmallow.fields.DateTime(format='iso'),
-        **kwargs
-    ))
+def iso_datetime_field(default=dataclasses.MISSING, **kwargs):
+    return dataclasses.field(
+        default=default,
+        metadata=dataclasses_json.config(
+            encoder=datetime.datetime.isoformat,
+            decoder=lambda x: datetime.datetime.fromisoformat(str(x)),
+            mm_field=marshmallow.fields.DateTime(format='iso'),
+            **kwargs
+        )
+    )
 
 
 def time_field(**kwargs):
@@ -92,8 +95,8 @@ class CompetitionSeason:
     country_name: str
     season_id: int
     season_name: str
-    match_updated: datetime.datetime = iso_datetime_field()
-    match_available: datetime.datetime = iso_datetime_field()
+    match_updated: typing.Optional[datetime.datetime] = iso_datetime_field(default=None)
+    match_available: typing.Optional[datetime.datetime] = iso_datetime_field(default=None)
 
     competition: typing.Optional[Competition] = None
     season: typing.Optional[Season] = None
