@@ -9,7 +9,7 @@ with open('README.md', 'r', encoding='utf8') as f:
 setup(
     name='statsbombapi',
     description='A wrapper for the Statsbomb API and public data.',
-    version='0.0.1-dev',
+    version='0.1.0-dev',
     packages=setuptools.find_packages(),
     author='Ben Torvaney',
     author_email='torvaney@protonmail.com',

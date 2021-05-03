@@ -1,122 +1,42 @@
-import typing
-import warnings
-
-import requests
-
-from .json import data, parse
+from . import loaders, decoders
 
 
-class StatsbombAPIException(Exception):
-    pass
+class APIClient:
+    def __init__(self, loader, decoder):
+        self.loader = loader
+        self.decoder = decoder
 
-
-class BaseAPIClient:
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def _get_competitions():
-        raise NotImplementedError
-
-    @staticmethod
-    def _get_matches(competition_id, season_id):
-        raise NotImplementedError
-
-    @staticmethod
-    def _get_lineups(match_id):
-        raise NotImplementedError
-
-    @staticmethod
-    def _get_events(match_id):
-        raise NotImplementedError
-
-    @staticmethod
-    def _unwrap_response(response):
-        if response.status_code != 200:
-            self.handle_non_ok_code(response)
-        return response.json()
-
-    @staticmethod
-    def handle_non_ok_code(response):
-        """
-        Subclass this method to handle non-200 error codes in a specific way.
-        For example, you may want to add logging
-        """
-        raise StatsbombAPIException(f'Unexpected error code when trying to reach {response.url}: {response.status_code}')
-
-    def _get_and_parse(self, response, parse):
-        response_json = self._unwrap_response(response)
-        parsed = parse(response_json)
-        return parsed
-
-    def competitions(self) -> typing.List[typing.Tuple[data.Competition, data.Season]]:
-        """ Get competitions data from StatsBomb """
-        return self._get_and_parse(
-            self._get_competitions(),
-            parse.parse_competitions
+    def competitions(self):
+        return self.decoder.decode_competitions(
+            self.loader.load_competitions()
         )
 
-    def matches(self, competition_id: int, season_id: int) -> typing.List[data.Match]:
-        """ Get matches data from StatsBomb """
-        return self._get_and_parse(
-            self._get_matches(competition_id, season_id),
-            parse.parse_matches
+    def matches(self, competition_id, season_id):
+        return self.decoder.decode_matches(
+            self.loader.load_matches(competition_id, season_id)
         )
 
-    def lineups(self, match_id: int) -> typing.List[data.Lineup]:
-        """ Get lineups data from StatsBomb """
-        return self._get_and_parse(
-            self._get_lineups(match_id),
-            parse.parse_lineups
+    def lineups(self, match_id):
+        return self.decoder.decode_lineups(
+            self.loader.load_lineups(match_id)
         )
 
-    def events(self, match_id: int) -> typing.List[data.Event]:
-        """ Get events data from StatsBomb """
-        return self._get_and_parse(
-            self._get_events(match_id),
-            parse.parse_events
+    def events(self, match_id):
+        return self.decoder.decode_events(
+            self.loader.load_events(match_id)
         )
 
 
-class StatsbombPublic(BaseAPIClient):
-    BASE_URL = 'https://raw.githubusercontent.com/statsbomb/open-data/master/data'
+class StatsbombPublic(APIClient):
+    def __init__(self, decoder=decoders.DataclassDecoder()):
+        self.loader = loaders.OpenDataLoader()
+        self.decoder = decoder
 
-    def __init__(self):
-        super().__init__()
-        statsbomb_data_advice = (
-            'Please be responsible with Statsbomb data and make sure you have '
-            'registered your details on https://www.statsbomb.com/resource-centre, '
-            'and read and accepted the User Agreement (available on the same page).'
+
+class StatsbombAPI(APIClient):
+    def __init__(self, username, password, decoder=decoders.DataclassDecoder()):
+        self.loader = loaders.StatsbombAPILoader(
+            username=username,
+            password=password
         )
-        warnings.warn(statsbomb_data_advice)
-
-    def _get_competitions(self):
-        return requests.get(f'{self.BASE_URL}/competitions.json')
-
-    def _get_matches(self, competition_id, season_id):
-        return requests.get(f'{self.BASE_URL}/matches/{competition_id}/{season_id}.json')
-
-    def _get_lineups(self, match_id):
-        return requests.get(f'{self.BASE_URL}/lineups/{match_id}.json')
-
-    def _get_events(self, match_id):
-        return requests.get(f'{self.BASE_URL}/events/{match_id}.json')
-
-
-class StatsbombAPI(BaseAPIClient):
-    BASE_URL = 'https://data.statsbombservices.com/api'
-
-    def __init__(self, username, password):
-        self.auth = (username, password)
-
-    def _get_competitions(self, version='v2'):
-        return requests.get(f'{self.BASE_URL}/{version}/competitions', auth=self.auth)
-
-    def _get_matches(self, competition_id, season_id, version='v3'):
-        return requests.get(f'{self.BASE_URL}/{version}/competitions/{competition_id}/seasons/{season_id}/matches', auth=self.auth)
-
-    def _get_lineups(self, match_id, version='v2'):
-        return requests.get(f'{self.BASE_URL}/{version}/lineups/{match_id}')
-
-    def _get_events(self, match_id, version='v5'):
-        return requests.get(f'{self.BASE_URL}/{version}/events/{match_id}')
+        self.decoder = decoder
