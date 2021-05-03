@@ -196,7 +196,7 @@ class Match:
     home_score: typing.Optional[int] = None
     away_score: typing.Optional[int] = None
     referee: typing.Optional[Referee] = None
-    competition_stage: typing.Optional = None
+    competition_stage: typing.Optional[CompetitionStage] = None
 
 
 @dataclasses_json.dataclass_json
