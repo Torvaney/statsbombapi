@@ -28,7 +28,7 @@ COMPETITIONS = {
             "competition_gender": "male",
             "season_name": "561/562",
             "match_updated": "2000-12-01T23:00:00.000000",
-            "match_available": "2000-12-01T23:00:00.000000",
+            "match_available": None,
         },
         {
             "competition_id": 3,
@@ -37,7 +37,7 @@ COMPETITIONS = {
             "competition_name": "Wessex Women's Championship",
             "competition_gender": "female",
             "season_name": "561/562",
-            "match_updated": "2000-12-01T23:00:00.000000",
+            "match_updated": None,
             "match_available": "2000-12-01T23:00:00.000000",
         },
     ]
