@@ -3,7 +3,6 @@ Test the parsing of real data from statsbomb's opendata repo
 NOTE: requires an internet connection!
 """
 import statsbombapi
-import warnings
 
 
 def _test_route(route, *args, **kwargs):
@@ -18,9 +17,7 @@ def _test_route(route, *args, **kwargs):
     ]
     for decoder in decoders:
         s.decoder = decoder
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            getattr(s, route)(*args, **kwargs)
+        getattr(s, route)(*args, **kwargs)
 
 
 def test_competitions():
