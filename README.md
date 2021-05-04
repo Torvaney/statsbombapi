@@ -124,14 +124,19 @@ Event(id=UUID('8b7f985e-2fa5-4b08-9893-0d1b77cf7076'), index=225, period=1,
  miscontrol=None, pass_=None, player_off=None, pressure=None, shot=None, substitution=None)
 ```
 
-## Other output formats
+## Configuration and extensibility
 
 If you don't want to use dataclasses, `statsbombapi` provides an extensible API client
-to enable you to fetch StatsBomb data in whatever format you want.
+to enable you to fetch StatsBomb data in whatever format you want, from whichever
+source you want.
 
 ### Loaders and Decoders
 
 The API Client is composed of a loader and a decoder:
+
+* The **loader** takes fetches StatsBomb data from some data source. For example,
+  the StatsBomb API, or the [StatsBomb Open Data repo](https://github.com/statsbomb/open-data/).
+* The **decoder** converts the statsbomb data into the desired format. For example, JSON, or dataclasses.
 
 ```python
 client = statsbombapi.StatsbombPublic()
@@ -163,7 +168,7 @@ json_client = statsbombapi.StatsbombAPI(
 )
 ```
 
-You could use this interface to use own custom decoders. For example,
+You can use this interface to use own custom decoders. For example,
 you might want to return data as pandas DataFrames:
 
 ```python
@@ -199,8 +204,9 @@ df_client = statsbombapi.StatsbombPublic(
 3264  70f30ecb-b85d-48d9-83bc-f62e1613dc3f   3265       2  00:49:33.738      94      33  ...
 ```
 
-Likewise, you could swap out the loader to load from disk (`statsbombapi.LocalLoader`),
-or define a custom loaders to (for example) cache data locally, or pull data from s3.
+You can use the `APIClient` class to configure the loader, too. For example, you
+might want to load from disk (`statsbombapi.LocalLoader`). Or, you might
+define a custom loader to (for example) cache data locally, or pull data from s3.
 
 
 ## Yet another statsbomb API package?!
