@@ -16,14 +16,14 @@ pip install git+https://github.com/torvaney/statsbombapi.git
 >>> import statsbombapi
 
 # Connect to the Public Data Repo
->>> api = statsbombapi.StatsBombPublic()
+>>> api = statsbombapi.StatsbombPublic()
 UserWarning: Please be responsible with StatsBomb data and make sure you have
  registered your details on https://www.statsbomb.com/resource-centre, and read and
  accepted the User Agreement (available on the same page).
   warnings.warn(statsbomb_data_advice)
 
 # Or, if connecting to the API proper
->>> api = statsbombapi.StatsBombAPI(username='...', password='...')
+>>> api = statsbombapi.StatsbombAPI(username='...', password='...')
 ```
 
 The StatsBomb API provides 4 routes, which can be accessed by calling the
