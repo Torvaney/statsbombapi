@@ -179,7 +179,7 @@ dataframe_decoder = statsbombapi.decoders.CompositeDecoder(
   # to chain together two decoders using `CompositeDecoder`.
   # The first (`JsonDecoder`) uses json.decode to decode the API response into
   # Python objects (lists and dicts)
-  statsbombapi.decoders.JsonDecoder,
+  statsbombapi.decoders.JsonDecoder(),
   # The second uses the `pd.DataFrame` constructor on the output of 4 API routes
   # (after they've been decoded by `JsonDecoder`)
   statsbombapi.decoders.UniformDecoder(pd.DataFrame)
